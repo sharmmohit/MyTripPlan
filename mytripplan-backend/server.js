@@ -2,13 +2,14 @@
 
 // Import necessary modules
 const express = require('express');
-const mysql = require('mysql2/promise'); // Using the promise-based API for async/await
 const dotenv = require('dotenv');
 const cors = require('cors'); // Import CORS middleware
 const jwt = require('jsonwebtoken'); // Re-added for the 'protect' middleware here
-
+const pool = require('./config/db');
 // Import authentication controller
 const authController = require('./controllers/authController');
+const flightController = require('./controllers/flightController');
+const bookingController = require('./controllers/bookingController');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -23,26 +24,9 @@ app.use(express.json());
 app.use(cors());
 
 // Database connection pool setup
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+
 
 // Test database connection
-pool.getConnection()
-  .then(connection => {
-    console.log('Successfully connected to the MySQL database!');
-    connection.release();
-  })
-  .catch(err => {
-    console.error('Error connecting to the database:', err.message);
-    process.exit(1);
-  });
 
 // Define a simple root route to confirm the server is running
 app.get('/', (req, res) => {
@@ -129,8 +113,8 @@ const protect = (req, res, next) => {
 //     res.status(500).json({ message: 'Server error fetching profile.', error: error.message });
 //   }
 // });
-
-
+app.get('/api/flights/search', (req, res) => flightController.searchFlights(req, res, pool));
+app.post('/api/bookings', protect, (req, res) => bookingController.bookFlight(req, res, pool));
 // Define the port from environment variables or default to 5000
 const PORT = process.env.PORT || 5000;
 

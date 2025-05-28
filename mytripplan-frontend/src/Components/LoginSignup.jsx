@@ -24,7 +24,6 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
     const [lastName, setLastName] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
-
     // --- Effects and Resets ---
 
     // Effect to clear messages and reset specific states when tab or stage changes
@@ -268,7 +267,6 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
         }
     };
 
-
     // --- Conditional Rendering for Different Stages ---
 
     const renderLoginContent = () => {
@@ -295,7 +293,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                         <button
                             type="button"
                             onClick={handleSendOtp}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed mb-4 transform hover:scale-105"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed mb-4 transform hover:scale-[1.02] shadow-md"
                             disabled={isLoading || !email}
                         >
                             {isLoading ? 'Sending OTP...' : 'CONTINUE WITH EMAIL OTP'}
@@ -308,7 +306,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                         <button
                             type="button"
                             onClick={() => { setLoginStage('password'); setError(''); setSuccessMessage(''); }}
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
                             disabled={isLoading}
                         >
                             LOGIN WITH PASSWORD
@@ -340,7 +338,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                         </div>
                         <button
                             type="submit"
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
                             disabled={isLoading || otp.length !== 6}
                         >
                             {isLoading ? 'Verifying...' : 'LOGIN'}
@@ -352,7 +350,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                                 <button
                                     type="button"
                                     onClick={handleSendOtp}
-                                    className="text-blue-500 hover:underline text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="text-blue-600 hover:text-blue-800 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed underline"
                                     disabled={isLoading}
                                 >
                                     Resend OTP
@@ -363,7 +361,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                             <button
                                 type="button"
                                 onClick={() => { setLoginStage('initial'); setError(''); setSuccessMessage(''); }}
-                                className="text-gray-600 hover:underline text-sm"
+                                className="text-gray-600 hover:text-gray-800 font-medium text-sm underline"
                                 disabled={isLoading}
                             >
                                 Go Back
@@ -406,7 +404,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                         </div>
                         <button
                             type="submit"
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
                             disabled={isLoading || !email || !password}
                         >
                             {isLoading ? 'Logging In...' : 'LOGIN'}
@@ -415,7 +413,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                             <button
                                 type="button"
                                 onClick={() => { setLoginStage('initial'); setError(''); setSuccessMessage(''); }}
-                                className="text-gray-600 hover:underline text-sm"
+                                className="text-gray-600 hover:text-gray-800 font-medium text-sm underline"
                                 disabled={isLoading}
                             >
                                 Go Back
@@ -452,7 +450,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                         <button
                             type="button"
                             onClick={handleSendOtp}
-                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
                             disabled={isLoading || !email}
                         >
                             {isLoading ? 'Sending OTP...' : 'CREATE ACCOUNT WITH EMAIL OTP'}
@@ -484,7 +482,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                         </div>
                         <button
                             type="submit"
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
                             disabled={isLoading || otp.length !== 6}
                         >
                             {isLoading ? 'Verifying...' : 'VERIFY OTP'}
@@ -496,7 +494,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                                 <button
                                     type="button"
                                     onClick={handleSendOtp}
-                                    className="text-blue-500 hover:underline text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="text-blue-600 hover:text-blue-800 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed underline"
                                     disabled={isLoading}
                                 >
                                     Resend OTP
@@ -507,7 +505,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                             <button
                                 type="button"
                                 onClick={() => { setSignupStage('initial'); setError(''); setSuccessMessage(''); }}
-                                className="text-gray-600 hover:underline text-sm"
+                                className="text-gray-600 hover:text-gray-800 font-medium text-sm underline"
                                 disabled={isLoading}
                             >
                                 Go Back
@@ -548,7 +546,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                         </div>
                         <button
                             type="submit"
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
                             disabled={isLoading || !firstName}
                         >
                             {isLoading ? 'Processing...' : 'CONTINUE'}
@@ -557,7 +555,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                             <button
                                 type="button"
                                 onClick={() => { setSignupStage('initial'); setEmail(''); setError(''); setSuccessMessage(''); }}
-                                className="text-gray-600 hover:underline text-sm"
+                                className="text-gray-600 hover:text-gray-800 font-medium text-sm underline"
                                 disabled={isLoading}
                             >
                                 Go Back
@@ -601,7 +599,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                         </div>
                         <button
                             type="submit"
-                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
                             disabled={isLoading || !password || !confirmPassword || password !== confirmPassword}
                         >
                             {isLoading ? 'Creating Account...' : 'SUBMIT'}
@@ -610,7 +608,7 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                             <button
                                 type="button"
                                 onClick={() => { setSignupStage('details'); setError(''); setSuccessMessage(''); }}
-                                className="text-gray-600 hover:underline text-sm"
+                                className="text-gray-600 hover:text-gray-800 font-medium text-sm underline"
                                 disabled={isLoading}
                             >
                                 Go Back
@@ -623,7 +621,6 @@ const LoginSignup = ({ onClose, onLoginSuccess }) => {
                 return null;
         }
     };
-
 
     // --- Main Component Render ---
     return (

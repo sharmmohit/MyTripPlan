@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // Assuming LoginSignup.jsx is in src/components/LoginSignup.jsx
 import LoginSignup from './LoginSignup';
+import FlightSearchTab from './FlightSearchTab';
 
 // Main Home component for MyTripPlan
 const Home = () => {
@@ -45,7 +46,7 @@ const Home = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'flights':
-        return <PlaceholderTab title="Flights" />;
+        return <FlightSearchTab />;
       case 'hotels':
         return <PlaceholderTab title="Hotels" />;
       case 'trains':
