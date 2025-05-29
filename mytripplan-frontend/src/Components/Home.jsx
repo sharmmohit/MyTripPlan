@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 // Assuming LoginSignup.jsx is in src/components/LoginSignup.jsx
 import LoginSignup from './LoginSignup';
 import FlightSearchTab from './FlightSearchTab';
+import TrainSearchTab from './TrainSearchTab';
+import BusSearchTab from './BusSearchTab';
+import CabSearchTab from './CabSearchTab';
 
 // Main Home component for MyTripPlan
 const Home = () => {
@@ -50,11 +53,11 @@ const Home = () => {
       case 'hotels':
         return <PlaceholderTab title="Hotels" />;
       case 'trains':
-        return <PlaceholderTab title="Trains" />;
+        return <TrainSearchTab />;
       case 'buses':
-        return <PlaceholderTab title="Buses" />;
+        return <BusSearchTab />;
       case 'cabs':
-        return <PlaceholderTab title="Cabs" />;
+        return <CabSearchTab />;
       case 'cinema':
         return <PlaceholderTab title="Cinema" />;
       case 'tour-packages':
