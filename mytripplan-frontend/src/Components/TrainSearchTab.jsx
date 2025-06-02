@@ -1,31 +1,37 @@
-// src/components/TrainSearchForm.jsx
+// src/components/TrainSearchTab.jsx
 import React, { useState, useEffect } from 'react';
 import { FaTrain, FaCalendarAlt, FaChevronDown, FaExchangeAlt } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const TrainSearchTab = ({ initialFrom, initialTo }) => {
+  // Use initial props for default state, allowing pre-filling from other parts of the app
   const [fromStation, setFromStation] = useState(initialFrom || { city: 'Indore', code: 'INDB', description: 'Indore - All Stations' });
   const [toStation, setToStation] = useState(initialTo || { city: 'Ratlam', code: 'RTM', description: 'Ratlam Junction' });
   const [travelDate, setTravelDate] = useState('');
-  const [trainClass, setTrainClass] = useState('ALL');
+  const [trainClass, setTrainClass] = useState('ALL'); // Default to 'ALL'
   const [showFromDropdown, setShowFromDropdown] = useState(false);
   const [showToDropdown, setShowToDropdown] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [error, setError] = useState(''); // For client-side validation errors
+  const navigate = useNavigate(); // Hook for navigation
 
-  // Mock Train Station Data
+  // Mock Train Station Data (ensure these codes match your database train_stations.code)
   const trainStations = [
     { city: 'Indore', code: 'INDB', description: 'Indore - All Stations' },
     { city: 'Ratlam', code: 'RTM', description: 'Ratlam Junction' },
     { city: 'Bhopal', code: 'BPL', description: 'Bhopal Junction' },
-    { city: 'Mumbai', code: 'CSTM', description: 'Chhatrapati Shivaji Maharaj Terminus' },
+    { city: 'Mumbai', code: 'BOMC', description: 'Mumbai Central' }, // Use BOMC as per your mock data
     { city: 'Delhi', code: 'NDLS', description: 'New Delhi Railway Station' },
     { city: 'Bengaluru', code: 'SBC', description: 'KSR Bengaluru City Junction' },
     { city: 'Chennai', code: 'MAS', description: 'MGR Chennai Central' },
+    { city: 'Kolkata', code: 'HWH', description: 'Howrah Junction' },
+    { city: 'Hyderabad', code: 'SC', description: 'Secunderabad Junction' },
+    { city: 'Jaipur', code: 'JP', description: 'Jaipur Junction' },
+    { city: 'Ahmedabad', code: 'ADI', description: 'Ahmedabad Junction' },
+    { city: 'Pune', code: 'PUNE', description: 'Pune Junction' },
+    { city: 'Lucknow', code: 'LKO', description: 'Lucknow Charbagh NR' },
   ];
 
-  // Train Class Options
+  // Train Class Options (These codes must match the keys in the 'classes' JSON in your trains table)
   const trainClasses = [
     { code: 'ALL', label: 'All Class' },
     { code: '1A', label: 'AC First Class (1A)' },
@@ -33,14 +39,16 @@ const TrainSearchTab = ({ initialFrom, initialTo }) => {
     { code: '3A', label: 'AC 3 Tier (3A)' },
     { code: 'SL', label: 'Sleeper (SL)' },
     { code: '2S', label: 'Second Seating (2S)' },
+    { code: 'EC', label: 'Executive Class (EC)' }, // Added for Shatabdi
+    { code: 'CC', label: 'Chair Car (CC)' },     // Added for Shatabdi/Gomti
   ];
 
   // Formats a Date object into 'YYYY-MM-DD' string for input 'min' attribute
   const formatDateForInput = (date) => {
-    const yyyy = date.getFullYear();
+    const year = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const dd = String(date.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
+    return `${year}-${mm}-${dd}`;
   };
 
   // Gets today's date in 'YYYY-MM-DD' format
@@ -69,10 +77,10 @@ const TrainSearchTab = ({ initialFrom, initialTo }) => {
   const handleStationSelect = (station, type) => {
     if (type === 'from') {
       setFromStation(station);
-      setShowFromDropdown(false);
+      setShowFromDropdown(false); // Close dropdown after selection
     } else {
       setToStation(station);
-      setShowToDropdown(false);
+      setShowToDropdown(false); // Close dropdown after selection
     }
   };
 
@@ -83,25 +91,22 @@ const TrainSearchTab = ({ initialFrom, initialTo }) => {
     setToStation(temp);
   };
 
-  // Handles the train search form submission
+  // Handles the train search form submission - now navigates to results page
   const handleSearchTrains = async (e) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
+    e.preventDefault(); // Prevent default form submission
+    setError(''); // Clear previous errors
 
-    // Basic validation
+    // Basic client-side validation
     if (!fromStation.code || !toStation.code || !travelDate) {
       setError('Please select From, To, and Travel Date.');
-      setIsLoading(false);
       return;
     }
     if (fromStation.code === toStation.code) {
       setError('Origin and Destination cannot be the same.');
-      setIsLoading(false);
       return;
     }
 
-    // Navigate to results page with search parameters
+    // Navigate to the train results page, passing search parameters via state
     navigate('/train-results', {
       state: {
         fromStation,
@@ -133,7 +138,7 @@ const TrainSearchTab = ({ initialFrom, initialTo }) => {
             className="flex items-center cursor-pointer"
             onClick={() => {
               setShowFromDropdown(!showFromDropdown);
-              setShowToDropdown(false);
+              setShowToDropdown(false); // Close other dropdown
             }}
           >
             <FaTrain className="text-gray-400 mr-2" />
@@ -141,6 +146,7 @@ const TrainSearchTab = ({ initialFrom, initialTo }) => {
               <p className="font-medium text-lg text-gray-800">{fromStation.city}</p>
               <p className="text-xs text-gray-500">{fromStation.code}, {fromStation.description}</p>
             </div>
+            {/* Chevron icon with rotation for dropdown state */}
             <FaChevronDown className={`text-gray-400 transition-transform ${showFromDropdown ? 'transform rotate-180' : ''}`} />
           </div>
           {/* From Station Dropdown */}
@@ -168,7 +174,7 @@ const TrainSearchTab = ({ initialFrom, initialTo }) => {
             className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
             aria-label="Swap origin and destination"
           >
-            <FaExchangeAlt className="h-5 w-5 text-gray-600" />
+            <FaExchangeAlt className="h-5 w-5 text-gray-600" /> {/* Using FaExchangeAlt icon */}
           </button>
         </div>
 
@@ -179,14 +185,15 @@ const TrainSearchTab = ({ initialFrom, initialTo }) => {
             className="flex items-center cursor-pointer"
             onClick={() => {
               setShowToDropdown(!showToDropdown);
-              setShowFromDropdown(false);
+              setShowFromDropdown(false); // Close other dropdown
             }}
           >
-            <FaTrain className="text-gray-400 mr-2 rotate-90" />
+            <FaTrain className="text-gray-400 mr-2 rotate-90" /> {/* Rotated train icon */}
             <div className="flex-1">
               <p className="font-medium text-lg text-gray-800">{toStation.city}</p>
               <p className="text-xs text-gray-500">{toStation.code}, {toStation.description}</p>
             </div>
+            {/* Chevron icon with rotation for dropdown state */}
             <FaChevronDown className={`text-gray-400 transition-transform ${showToDropdown ? 'transform rotate-180' : ''}`} />
           </div>
           {/* To Station Dropdown */}
@@ -220,11 +227,13 @@ const TrainSearchTab = ({ initialFrom, initialTo }) => {
               required
             />
           </div>
+          {/* Date text element visibility fix: Increased font size and ensured block display */}
           <span className="block text-sm text-gray-600 mt-1">{formatDisplayDate(travelDate)}</span>
         </div>
 
         {/* Class Selection */}
         <div className="md:col-span-2 relative p-4 bg-blue-50 border-b sm:border-b-0 border-gray-300">
+          {/* Class title visibility fix: Ensure label is block and has margin */}
           <label className="block text-xs font-medium text-blue-700 mb-1">CLASS</label>
           <div className="relative flex items-center">
             <select
@@ -236,8 +245,10 @@ const TrainSearchTab = ({ initialFrom, initialTo }) => {
                 <option key={cls.code} value={cls.code}>{cls.label}</option>
               ))}
             </select>
+            {/* Chevron icon for select dropdown, pointer-events-none ensures select is clickable */}
             <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
+          {/* Class text alignment fix: Increased font size and ensured block display */}
           <span className="block text-sm text-gray-600 mt-1">
             {trainClasses.find(cls => cls.code === trainClass)?.label || 'All Class'}
           </span>
@@ -250,19 +261,9 @@ const TrainSearchTab = ({ initialFrom, initialTo }) => {
           type="submit"
           onClick={handleSearchTrains}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-12 rounded-lg text-xl transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={isLoading}
+          // isLoading state is no longer needed here as API call is on results page
         >
-          {isLoading ? (
-            <span className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              SEARCHING...
-            </span>
-          ) : (
-            'SEARCH'
-          )}
+          SEARCH
         </button>
       </div>
     </div>
