@@ -1,12 +1,10 @@
-// src/components/TrainResultsDisplay.jsx
 import React from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for the BOOK NOW button
+import { useNavigate } from 'react-router-dom';
 
 const TrainResultsDisplay = ({ trainSearchResults, onBackToSearch, searchParams }) => {
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
 
-  // Helper to format date for display
   const formatDisplayDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -18,10 +16,9 @@ const TrainResultsDisplay = ({ trainSearchResults, onBackToSearch, searchParams 
 
   return (
     <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-6">
-      {/* Back button and search summary */}
       <div className="mb-6">
         <button
-          onClick={onBackToSearch} // This prop comes from TrainResultsPage
+          onClick={onBackToSearch}
           className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
         >
           <FaArrowLeft className="mr-2" />
@@ -44,9 +41,7 @@ const TrainResultsDisplay = ({ trainSearchResults, onBackToSearch, searchParams 
         </div>
       </div>
 
-      {/* Results list */}
-      {/* Defensive check: Ensure trainSearchResults is an array before accessing length */}
-      {(trainSearchResults || []).length > 0 ? (
+      {trainSearchResults && trainSearchResults.length > 0 ? (
         <div className="space-y-4">
           {trainSearchResults.map((train) => (
             <div key={train.id} className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
@@ -57,7 +52,7 @@ const TrainResultsDisplay = ({ trainSearchResults, onBackToSearch, searchParams 
                 </div>
                 <div className="mb-2 md:mb-0 md:w-1/4 text-center">
                   <p className="text-xl font-bold text-blue-600">{train.departureTime}</p>
-                  <p className="text-sm text-gray-600">{train.departureStationCode}</p> {/* Use departureStationCode */}
+                  <p className="text-sm text-gray-600">{train.departureStationCode}</p>
                 </div>
                 <div className="mb-2 md:mb-0 md:w-1/4 text-center">
                   <p className="text-sm text-gray-500">{train.duration}</p>
@@ -65,7 +60,7 @@ const TrainResultsDisplay = ({ trainSearchResults, onBackToSearch, searchParams 
                 </div>
                 <div className="mb-2 md:mb-0 md:w-1/4 text-center">
                   <p className="text-xl font-bold text-blue-600">{train.arrivalTime}</p>
-                  <p className="text-sm text-gray-600">{train.arrivalStationCode}</p> {/* Use arrivalStationCode */}
+                  <p className="text-sm text-gray-600">{train.arrivalStationCode}</p>
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-gray-200">
@@ -98,7 +93,7 @@ const TrainResultsDisplay = ({ trainSearchResults, onBackToSearch, searchParams 
         <div className="text-center py-10">
           <p className="text-lg text-gray-700">No trains found for your search criteria.</p>
           <button
-            onClick={onBackToSearch} // This prop comes from TrainResultsPage
+            onClick={onBackToSearch}
             className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg"
           >
             Modify Search
