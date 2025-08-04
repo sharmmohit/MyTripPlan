@@ -17,11 +17,12 @@ function App() {
       
        
         <Routes>
-            <Route path="/" element={<HotelSearch/>} />
+            <Route path="/" element={<Home />} />
           <Route path="/flightdisplay" element={<FlightResultsDisplay />} />
           <Route path="/train-results" element={<TrainResults />} />
             <Route path="/bus-results" element={<BusResults />} />
              <Route path="/cab-results" element={<CabResults />} />
+             <Route path="/hotel-search" element={<HotelSearch />} />
         </Routes>
       
   
