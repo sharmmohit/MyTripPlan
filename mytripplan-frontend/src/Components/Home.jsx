@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { FaPlane, FaHotel, FaTrain, FaBus, FaTaxi, FaFilm, FaGlobeAmericas, FaMapMarkerAlt, FaShieldAlt, FaGift } from 'react-icons/fa';
+import { HiOutlineOfficeBuilding } from 'react-icons/hi';
 import LoginSignup from './LoginSignup';
-import FlightSearchTab from './FlightSearchTab';
-import TrainSearchTab from './TrainSearchTab';
-import BusSearchTab from './BusSearchTab';
-import CabSearchTab from './CabSearchTab';
+import FlightSearchTab from './Flights/FlightSearchTab';
+import TrainSearchTab from './Trains/TrainSearchTab';
+import BusSearchTab from './Buses/BusSearchTab';
+import CabSearchTab from './Cabs/CabSearchTab';
+import CinemaSearchTab from './Cinema/CinemaSearchTab';
+import HotelSearchTab from './HotelSearchTab';
+import HotelSearch from './HotelSearch';
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState('flights');
@@ -45,7 +50,7 @@ const Home = () => {
       case 'flights':
         return <FlightSearchTab />;
       case 'hotels':
-        return <PlaceholderTab title="Hotels" />;
+        return <HotelSearch/>;
       case 'trains':
         return <TrainSearchTab />;
       case 'buses':
@@ -53,7 +58,7 @@ const Home = () => {
       case 'cabs':
         return <CabSearchTab />;
       case 'cinema':
-        return <PlaceholderTab title="Cinema" />;
+        return <CinemaSearchTab />;
       case 'tour-packages':
         return <PlaceholderTab title="Tour Packages" />;
       default:
@@ -62,12 +67,11 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 font-sans antialiased flex flex-col">
+    <div className="min-h-screen font-sans antialiased flex flex-col bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header Section */}
       <header className="bg-white shadow-md py-3 px-6 md:px-12 relative z-10">
         <div className="container mx-auto flex flex-wrap justify-between items-center">
           <div className="flex items-center">
-            <span className="text-4xl mr-2 animate-pulse">💼</span>
             <span className="text-4xl font-extrabold text-blue-600 tracking-tighter mr-1">My</span>
             <span className="text-4xl font-extrabold text-orange-500 tracking-tighter">TripPlan</span>
           </div>
@@ -100,36 +104,106 @@ const Home = () => {
       <main className="flex-grow container mx-auto px-4 py-8 -mt-16 md:-mt-12 relative z-0">
         {/* Booking Tabs and Search Form */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8 mt-16 md:mt-12">
-          <div className="flex flex-wrap gap-2 justify-center md:justify-start border-b border-gray-200 pb-4 mb-6">
-            <TabButton label="Flights" icon="✈️" isActive={activeTab === 'flights'} onClick={() => setActiveTab('flights')} />
-            <TabButton label="Hotels" icon="🏨" isActive={activeTab === 'hotels'} onClick={() => setActiveTab('hotels')} />
-            <TabButton label="Trains" icon="🚆" isActive={activeTab === 'trains'} onClick={() => setActiveTab('trains')} />
-            <TabButton label="Buses" icon="🚌" isActive={activeTab === 'buses'} onClick={() => setActiveTab('buses')} />
-            <TabButton label="Cabs" icon="🚕" isActive={activeTab === 'cabs'} onClick={() => setActiveTab('cabs')} />
-            <TabButton label="Cinema" icon="🎬" isActive={activeTab === 'cinema'} onClick={() => setActiveTab('cinema')} />
-            <TabButton label="Tour Packages" icon="🌍" isActive={activeTab === 'tour-packages'} onClick={() => setActiveTab('tour-packages')} />
+          {/* Transportation Icons - Centered and Full Width */}
+          <div className="flex justify-center w-full mb-6">
+            <div className="grid grid-cols-7 gap-2 md:gap-4 w-full max-w-4xl">
+              <TabButton 
+                label="Flights" 
+                icon={<FaPlane className="mx-auto" size={20} />} 
+                isActive={activeTab === 'flights'} 
+                onClick={() => setActiveTab('flights')} 
+              />
+              <TabButton 
+                label="Hotels" 
+                icon={<FaHotel className="mx-auto" size={20} />} 
+                isActive={activeTab === 'hotels'} 
+                onClick={() => setActiveTab('hotels')} 
+              />
+              <TabButton 
+                label="Trains" 
+                icon={<FaTrain className="mx-auto" size={20} />} 
+                isActive={activeTab === 'trains'} 
+                onClick={() => setActiveTab('trains')} 
+              />
+              <TabButton 
+                label="Buses" 
+                icon={<FaBus className="mx-auto" size={20} />} 
+                isActive={activeTab === 'buses'} 
+                onClick={() => setActiveTab('buses')} 
+              />
+              <TabButton 
+                label="Cabs" 
+                icon={<FaTaxi className="mx-auto" size={20} />} 
+                isActive={activeTab === 'cabs'} 
+                onClick={() => setActiveTab('cabs')} 
+              />
+              <TabButton 
+                label="Cinema" 
+                icon={<FaFilm className="mx-auto" size={20} />} 
+                isActive={activeTab === 'cinema'} 
+                onClick={() => setActiveTab('cinema')} 
+              />
+              <TabButton 
+                label="Tours" 
+                icon={<FaGlobeAmericas className="mx-auto" size={20} />} 
+                isActive={activeTab === 'tour-packages'} 
+                onClick={() => setActiveTab('tour-packages')} 
+              />
+            </div>
           </div>
 
           {renderTabContent()}
         </div>
 
         {/* Explore More Section */}
-        <section className="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <section className="rounded-xl shadow-lg p-6 mb-8 bg-gradient-to-r from-blue-50 to-purple-50">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Explore More</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <ExploreCard icon="📍" title="Where2Go" description="Discover new destinations" />
-            <ExploreCard icon="🛡️" title="Insurance" description="For International Trips" />
-            <ExploreCard icon="🌍" title="Explore International Flights" description="Cheapest Flights to Paris, Bali, Tokyo & more" />
-            <ExploreCard icon="🤝" title="MICE" description="Offsites, Events & Meetings" />
-            <ExploreCard icon="💳" title="Gift Cards" description="Give the gift of travel" />
+            <ExploreCard 
+              icon={<FaMapMarkerAlt size={24} className="text-blue-600" />} 
+              title="Where2Go" 
+              description="Discover new destinations" 
+            />
+            <ExploreCard 
+              icon={<FaShieldAlt size={24} className="text-green-600" />} 
+              title="Insurance" 
+              description="For International Trips" 
+            />
+            <ExploreCard 
+              icon={<FaPlane size={24} className="text-red-600" />} 
+              title="International Flights" 
+              description="Cheapest Flights worldwide" 
+            />
+            <ExploreCard 
+              icon={<HiOutlineOfficeBuilding size={24} className="text-purple-600" />} 
+              title="MICE" 
+              description="Offsites & Meetings" 
+            />
+            <ExploreCard 
+              icon={<FaGift size={24} className="text-orange-600" />} 
+              title="Gift Cards" 
+              description="Give the gift of travel" 
+            />
           </div>
         </section>
 
         {/* Featured Sections */}
         <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card title="Exclusive Flight Deals" description="Find the best prices for your next adventure." />
-          <Card title="Luxury Hotel Stays" description="Book your dream vacation with top-rated hotels." />
-          <Card title="Exciting Tour Packages" description="Explore new destinations with curated packages." />
+          <Card 
+            title="Exclusive Flight Deals" 
+            description="Find the best prices for your next adventure." 
+            icon={<FaPlane size={32} className="text-blue-500 mb-4" />}
+          />
+          <Card 
+            title="Luxury Hotel Stays" 
+            description="Book your dream vacation with top-rated hotels." 
+            icon={<FaHotel size={32} className="text-green-500 mb-4" />}
+          />
+          <Card 
+            title="Exciting Tour Packages" 
+            description="Explore new destinations with curated packages." 
+            icon={<FaGlobeAmericas size={32} className="text-purple-500 mb-4" />}
+          />
         </section>
       </main>
 
@@ -159,7 +233,7 @@ const Home = () => {
 // Reusable Components
 const TabButton = ({ label, icon, isActive, onClick }) => (
   <button
-    className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-300 ease-in-out text-center
+    className={`flex flex-col items-center space-y-1 px-2 py-3 rounded-lg transition-all duration-300 ease-in-out text-center
       ${isActive
         ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600 font-bold'
         : 'text-gray-700 hover:bg-gray-100'
@@ -167,8 +241,10 @@ const TabButton = ({ label, icon, isActive, onClick }) => (
       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
     onClick={onClick}
   >
-    <span className="text-2xl">{icon}</span>
-    <span className="text-sm">{label}</span>
+    <span className="flex items-center justify-center w-6 h-6 mx-auto">
+      {icon}
+    </span>
+    <span className="text-xs md:text-sm">{label}</span>
   </button>
 );
 
@@ -181,18 +257,19 @@ const PlaceholderTab = ({ title }) => (
 );
 
 const ExploreCard = ({ icon, title, description }) => (
-  <div className="flex flex-col items-center text-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-200 cursor-pointer">
-    <span className="text-3xl mb-2">{icon}</span>
+  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg hover:shadow-md transition duration-200 cursor-pointer">
+    <div className="mb-2">{icon}</div>
     <h4 className="text-sm font-semibold text-gray-800">{title}</h4>
-    <p className="text-xs text-gray-500">{description}</p>
+    <p className="text-xs text-gray-500 mt-1">{description}</p>
   </div>
 );
 
-const Card = ({ title, description }) => (
-  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center">
+const Card = ({ title, description, icon }) => (
+  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center hover:shadow-lg transition">
+    {icon}
     <h3 className="text-xl font-semibold text-gray-800 mb-2">{title}</h3>
-    <p className="text-gray-600">{description}</p>
-    <button className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-full transition duration-300">
+    <p className="text-gray-600 mb-4">{description}</p>
+    <button className="mt-auto bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-full transition duration-300">
       Learn More
     </button>
   </div>

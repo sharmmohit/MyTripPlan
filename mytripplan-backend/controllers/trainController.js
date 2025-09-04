@@ -1,41 +1,38 @@
-const trainModel = require('../models/trainModel');
+const axios = require('axios');
 
-const trainController = {
-    searchTrains: async (req, res) => {
-        const { fromCode, toCode, travelDate, trainClass } = req.body;
+exports.searchTrains = async (req, res) => {
+    const { from, to, date } = req.query;
 
-        if (!fromCode || !toCode || !travelDate || !trainClass) {
-            return res.status(400).json({ message: "Missing required train search parameters." });
-        }
+    if (!from || !to || !date) {
+        return res.status(400).json({ message: 'Please provide from, to, and date' });
+    }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const reqDate = new Date(travelDate);
-        reqDate.setHours(0, 0, 0, 0);
-
-        if (reqDate < today) {
-            return res.status(400).json({ message: "Travel date cannot be in the past." });
-        }
-
-        try {
-            const trains = await trainModel.findTrains(fromCode, toCode, travelDate, trainClass);
-            
-            if (trains.length === 0) {
-                return res.status(200).json({ 
-                    trains: [], 
-                    message: "No trains found for your selected criteria." 
-                });
+    try {
+        const options = {
+            method: 'GET',
+            url: 'https://irctc1.p.rapidapi.com/api/v3/trainBetweenStations',
+            params: {
+                fromStationCode: from,
+                toStationCode: to,
+                dateOfJourney: date
+            },
+            headers: {
+                'X-RapidAPI-Key': process.env.RAPID_API_KEY,
+                'X-RapidAPI-Host': process.env.RAPID_API_HOST
             }
-            
-            res.status(200).json({ trains });
-        } catch (error) {
-            console.error('Error in trainController.searchTrains:', error);
-            res.status(500).json({ 
-                message: "Internal server error during train search.",
-                error: error.message 
-            });
+        };
+
+        const response = await axios.request(options);
+        const data = response.data;
+
+        if (data && data.data && data.data.length > 0) {
+            res.status(200).json({ trains: data.data });
+        } else {
+            res.status(404).json({ message: 'No trains found' });
         }
+
+    } catch (error) {
+        console.error('Error fetching train data:', error.message);
+        res.status(500).json({ message: 'Failed to fetch train data', error: error.message });
     }
 };
-
-module.exports = trainController;
