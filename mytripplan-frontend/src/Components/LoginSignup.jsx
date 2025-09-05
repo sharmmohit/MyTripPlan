@@ -1,669 +1,316 @@
 // src/components/LoginSignup.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from "react";
 
-const LoginSignup = ({ onClose, onLoginSuccess }) => {
-    // Top-level state to manage which main tab is active: 'login' or 'signup'
-    const [activeTab, setActiveTab] = useState('login');
+const LoginSignup = ({ onLoginSuccess, onClose }) => {
+  const [activeTab, setActiveTab] = useState("login"); // login | signup
+  const [signupStage, setSignupStage] = useState("email"); // email | otp | details
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    // Shared States
-    const [email, setEmail] = useState('');
-    const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const backendUrl = 'http://localhost:5000'; // Your backend URL - Ensure this matches your backend!
+  const backendUrl = "http://localhost:5000/api/auth";
 
-    // Login Specific States
-    const [loginStage, setLoginStage] = useState('initial'); // 'initial', 'otp', 'password'
-    const [otp, setOtp] = useState('');
-    const [password, setPassword] = useState('');
-    const [otpCountdown, setOtpCountdown] = useState(0); // Countdown for OTP resend
+  // ------------------- Handlers -------------------
+  const handleSendOtp = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) return setError("Email is required");
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${backendUrl}/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSignupStage("otp");
+      } else {
+        setError(data.message || "Failed to send OTP.");
+      }
+    } catch {
+      setError("Error sending OTP. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Signup Specific States
-    const [signupStage, setSignupStage] = useState('initial'); // 'initial', 'otp', 'details', 'password'
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-
-    // --- Effects and Resets ---
-
-    // Effect to clear messages and reset specific states when tab or stage changes
-    useEffect(() => {
-        setError('');
-        setSuccessMessage('');
-        setOtpCountdown(0);
-
-        // Reset stage-specific inputs when switching major tabs
-        if (activeTab === 'login') {
-            setSignupStage('initial'); // Ensure signup flow is reset if we switch back
-            // Only reset login specific inputs if returning to initial login stage
-            if (loginStage === 'initial') {
-                setPassword('');
-                setOtp('');
-            }
-        } else { // activeTab === 'signup'
-            setLoginStage('initial'); // Ensure login flow is reset if we switch back
-            // Only reset signup specific inputs if returning to initial signup stage
-            if (signupStage === 'initial') {
-                setFirstName('');
-                setLastName('');
-                setPassword('');
-                setConfirmPassword('');
-                setOtp('');
-            }
+  const handleVerifyOtpAndProcess = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !otp) return setError("Email and OTP are required");
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${backendUrl}/verify-otp-and-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, otp }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        if (activeTab === "login") {
+          // ✅ OTP login success
+          if (data.user && data.token) {
+            localStorage.setItem("token", data.token);
+            onLoginSuccess(data.user, data.token);
+            onClose();
+          } else {
+            setError("Invalid response from server.");
+          }
+        } else {
+          // ✅ OTP verified for signup, move to details form
+          setSignupStage("details");
         }
-    }, [activeTab, loginStage, signupStage]);
+      } else {
+        setError(data.message || "Invalid OTP.");
+      }
+    } catch {
+      setError("Error verifying OTP. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // OTP resend countdown timer
-    useEffect(() => {
-        let timer;
-        if (otpCountdown > 0) {
-            timer = setTimeout(() => setOtpCountdown(otpCountdown - 1), 1000);
-        }
-        return () => clearTimeout(timer);
-    }, [otpCountdown]);
+  const handleSignupPasswordSubmit = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!firstName || !cleanEmail || !password) {
+      return setError("First name, email, and password are required");
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${backendUrl}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, lastName, email: cleanEmail, password }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        onLoginSuccess(data.user, data.token);
+        onClose();
+      } else {
+        setError(data.message || "Signup failed.");
+      }
+    } catch {
+      setError("Error during signup. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Function to handle switching tabs and reset relevant states
-    const handleTabSwitch = (tabName) => {
-        setActiveTab(tabName);
-        setEmail(''); // Always reset email when switching tabs
-        setError('');
-        setSuccessMessage('');
-        setIsLoading(false);
-        setOtpCountdown(0);
-        setOtp('');
+  const handlePasswordLogin = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) {
+      return setError("Email and password are required");
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${backendUrl}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, password }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        onLoginSuccess(data.user, data.token);
+        onClose();
+      } else {
+        setError(data.message || "Login failed.");
+      }
+    } catch {
+      setError("Error during login. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        if (tabName === 'login') {
-            setLoginStage('initial');
-            setSignupStage('initial'); // Ensure signup is completely reset
-            setFirstName('');
-            setLastName('');
-            setPassword('');
-            setConfirmPassword('');
-        } else { // tabName === 'signup'
-            setSignupStage('initial');
-            setLoginStage('initial'); // Ensure login is completely reset
-            setPassword('');
-        }
-    };
-
-    // --- Handlers ---
-
-    // Handler for sending OTP (used by both login and signup flows)
-    const handleSendOtp = async () => {
-        setError('');
-        setSuccessMessage('');
-        setIsLoading(true);
-
-        if (!email) {
-            setError('Please enter your email address.');
-            setIsLoading(false);
-            return;
-        }
-
-        try {
-            const response = await fetch(`${backendUrl}/api/auth/send-otp`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
-
-            const data = await response.json();
-            setIsLoading(false);
-
-            if (response.ok) {
-                setSuccessMessage(data.message);
-                setOtpCountdown(60); // Start 60-second countdown
-                // Determine next stage based on which flow is active
-                if (activeTab === 'login') {
-                    setLoginStage('otp');
-                } else if (activeTab === 'signup') {
-                    setSignupStage('otp');
-                }
-            } else {
-                setError(data.message || 'Failed to send OTP.');
-            }
-        } catch (err) {
-            setIsLoading(false);
-            setError('Network error. Please try again.');
-            console.error('Error sending OTP:', err);
-        }
-    };
-
-    // Handler for verifying OTP and logging in/moving to signup details
-    const handleVerifyOtpAndProcess = async (e) => {
-        e.preventDefault();
-        setError('');
-        setSuccessMessage('');
-        setIsLoading(true);
-
-        if (!otp || otp.length !== 6) {
-            setError('Please enter a valid 6-digit OTP.');
-            setIsLoading(false);
-            return;
-        }
-
-        try {
-            const response = await fetch(`${backendUrl}/api/auth/verify-otp-and-login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp }),
-            });
-
-            const data = await response.json();
-            setIsLoading(false);
-
-            if (response.ok) {
-                setSuccessMessage(data.message);
-                if (activeTab === 'login') { // If currently in login flow
-                    onLoginSuccess(data.user, data.token);
-                    onClose(); // Close modal on successful login
-                } else if (activeTab === 'signup') { // If currently in signup flow
-                    setSignupStage('details'); // Move to name input for signup
-                    setOtp(''); // Clear OTP field for next step
-                }
-            } else {
-                setError(data.message || 'OTP verification failed.');
-            }
-        } catch (err) {
-            setIsLoading(false);
-            setError('Network error. Please try again.');
-            console.error('Error verifying OTP:', err);
-        }
-    };
-
-    // Handler for password-based login
-    const handlePasswordLogin = async (e) => {
-        e.preventDefault();
-        setError('');
-        setSuccessMessage('');
-        setIsLoading(true);
-
-        if (!email || !password) {
-            setError('Email and password are required.');
-            setIsLoading(false);
-            return;
-        }
-
-        try {
-            const response = await fetch(`${backendUrl}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await response.json();
-            setIsLoading(false);
-
-            if (response.ok) {
-                setSuccessMessage(data.message);
-                onLoginSuccess(data.user, data.token);
-                onClose(); // Close modal on success
-            } else {
-                setError(data.message || 'Login failed. Invalid credentials.');
-            }
-        } catch (err) {
-            setIsLoading(false);
-            setError('Network error. Please try again.');
-            console.error('Error during password login:', err);
-        }
-    };
-
-    // Handler for submitting first name and last name during signup
-    const handleSignupDetailsSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        if (!firstName) {
-            setError('First Name is required.');
-            return;
-        }
-        setSignupStage('password'); // Move to password creation
-        setSuccessMessage(''); // Clear previous messages
-    };
-
-    // Handler for creating password and final signup
-    const handleSignupPasswordSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setIsLoading(true);
-
-        if (!password || !confirmPassword) {
-            setError('Please enter and confirm your password.');
-            setIsLoading(false);
-            return;
-        }
-        if (password.length < 6) { // Minimum password length
-            setError('Password must be at least 6 characters long.');
-            setIsLoading(false);
-            return;
-        }
-        if (password !== confirmPassword) {
-            setError('Passwords do not match.');
-            setIsLoading(false);
-            return;
-        }
-
-        try {
-            // This endpoint registers the user with all details and logs them in
-            const response = await fetch(`${backendUrl}/api/auth/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, email, password }),
-            });
-
-            const data = await response.json();
-            setIsLoading(false);
-
-            if (response.ok) {
-                setSuccessMessage(data.message + ' Redirecting...');
-                onLoginSuccess(data.user, data.token); // Log in the user after successful registration
-                onClose(); // Close modal
-            } else {
-                setError(data.message || 'Registration failed.');
-            }
-        } catch (err) {
-            setIsLoading(false);
-            setError('Network error. Please try again.');
-            console.error('Error during registration:', err);
-        }
-    };
-
-    // --- Conditional Rendering for Different Stages ---
-
-    const renderLoginContent = () => {
-        switch (loginStage) {
-            case 'initial':
-                return (
-                    <>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Login to MyTripPlan</h2>
-                        {error && <p className="text-red-500 text-center text-sm mb-4">{error}</p>}
-                        {successMessage && <p className="text-green-500 text-center text-sm mb-4">{successMessage}</p>}
-                        <div className="form-group mb-4">
-                            <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-                            <input
-                                type="email"
-                                id="email"
-                                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                placeholder="your@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <button
-                            type="button"
-                            onClick={handleSendOtp}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed mb-4 transform hover:scale-[1.02] shadow-md"
-                            disabled={isLoading || !email}
-                        >
-                            {isLoading ? 'Sending OTP...' : 'CONTINUE WITH EMAIL OTP'}
-                        </button>
-                        <div className="flex items-center my-4">
-                            <hr className="flex-grow border-t border-gray-300" />
-                            <span className="px-3 text-gray-500 text-sm">OR</span>
-                            <hr className="flex-grow border-t border-gray-300" />
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => { setLoginStage('password'); setError(''); setSuccessMessage(''); }}
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
-                            disabled={isLoading}
-                        >
-                            LOGIN WITH PASSWORD
-                        </button>
-                    </>
-                );
-
-            case 'otp':
-                return (
-                    <form onSubmit={handleVerifyOtpAndProcess} className="space-y-4">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Verify OTP for Login</h2>
-                        {error && <p className="text-red-500 text-center text-sm mb-4">{error}</p>}
-                        {successMessage && <p className="text-green-500 text-center text-sm mb-4">{successMessage}</p>}
-                        <div className="form-group">
-                            <label htmlFor="otp" className="block text-gray-700 text-sm font-bold mb-2">
-                                Enter OTP sent to <span className="font-semibold">{email}</span>
-                            </label>
-                            <input
-                                type="text"
-                                id="otp"
-                                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                placeholder="Enter 6-digit OTP"
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
-                                required
-                                maxLength="6"
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
-                            disabled={isLoading || otp.length !== 6}
-                        >
-                            {isLoading ? 'Verifying...' : 'LOGIN'}
-                        </button>
-                        <div className="text-center mt-3">
-                            {otpCountdown > 0 ? (
-                                <p className="text-sm text-gray-500">Resend OTP in {otpCountdown}s</p>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={handleSendOtp}
-                                    className="text-blue-600 hover:text-blue-800 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed underline"
-                                    disabled={isLoading}
-                                >
-                                    Resend OTP
-                                </button>
-                            )}
-                        </div>
-                        <div className="text-center mt-4">
-                            <button
-                                type="button"
-                                onClick={() => { setLoginStage('initial'); setError(''); setSuccessMessage(''); }}
-                                className="text-gray-600 hover:text-gray-800 font-medium text-sm underline"
-                                disabled={isLoading}
-                            >
-                                Go Back
-                            </button>
-                        </div>
-                    </form>
-                );
-
-            case 'password':
-                return (
-                    <form onSubmit={handlePasswordLogin} className="space-y-4">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Login with Password</h2>
-                        {error && <p className="text-red-500 text-center text-sm mb-4">{error}</p>}
-                        {successMessage && <p className="text-green-500 text-center text-sm mb-4">{successMessage}</p>}
-                        <div className="form-group">
-                            <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-                            <input
-                                type="email"
-                                id="email"
-                                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                placeholder="your@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                            <input
-                                type="password"
-                                id="password"
-                                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                placeholder="Enter your password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
-                            disabled={isLoading || !email || !password}
-                        >
-                            {isLoading ? 'Logging In...' : 'LOGIN'}
-                        </button>
-                        <div className="text-center mt-4">
-                            <button
-                                type="button"
-                                onClick={() => { setLoginStage('initial'); setError(''); setSuccessMessage(''); }}
-                                className="text-gray-600 hover:text-gray-800 font-medium text-sm underline"
-                                disabled={isLoading}
-                            >
-                                Go Back
-                            </button>
-                        </div>
-                    </form>
-                );
-            default:
-                return null;
-        }
-    };
-
-    const renderSignupContent = () => {
-        switch (signupStage) {
-            case 'initial':
-                return (
-                    <>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Create Your Account</h2>
-                        {error && <p className="text-red-500 text-center text-sm mb-4">{error}</p>}
-                        {successMessage && <p className="text-green-500 text-center text-sm mb-4">{successMessage}</p>}
-                        <div className="form-group mb-4">
-                            <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-                            <input
-                                type="email"
-                                id="email"
-                                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                placeholder="your@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <button
-                            type="button"
-                            onClick={handleSendOtp}
-                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
-                            disabled={isLoading || !email}
-                        >
-                            {isLoading ? 'Sending OTP...' : 'CREATE ACCOUNT WITH EMAIL OTP'}
-                        </button>
-                    </>
-                );
-
-            case 'otp':
-                return (
-                    <form onSubmit={handleVerifyOtpAndProcess} className="space-y-4">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Verify OTP for Signup</h2>
-                        {error && <p className="text-red-500 text-center text-sm mb-4">{error}</p>}
-                        {successMessage && <p className="text-green-500 text-center text-sm mb-4">{successMessage}</p>}
-                        <div className="form-group">
-                            <label htmlFor="otp" className="block text-gray-700 text-sm font-bold mb-2">
-                                Enter OTP sent to <span className="font-semibold">{email}</span>
-                            </label>
-                            <input
-                                type="text"
-                                id="otp"
-                                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                placeholder="Enter 6-digit OTP"
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
-                                required
-                                maxLength="6"
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
-                            disabled={isLoading || otp.length !== 6}
-                        >
-                            {isLoading ? 'Verifying...' : 'VERIFY OTP'}
-                        </button>
-                        <div className="text-center mt-3">
-                            {otpCountdown > 0 ? (
-                                <p className="text-sm text-gray-500">Resend OTP in {otpCountdown}s</p>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={handleSendOtp}
-                                    className="text-blue-600 hover:text-blue-800 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed underline"
-                                    disabled={isLoading}
-                                >
-                                    Resend OTP
-                                </button>
-                            )}
-                        </div>
-                        <div className="text-center mt-4">
-                            <button
-                                type="button"
-                                onClick={() => { setSignupStage('initial'); setError(''); setSuccessMessage(''); }}
-                                className="text-gray-600 hover:text-gray-800 font-medium text-sm underline"
-                                disabled={isLoading}
-                            >
-                                Go Back
-                            </button>
-                        </div>
-                    </form>
-                );
-
-            case 'details':
-                return (
-                    <form onSubmit={handleSignupDetailsSubmit} className="space-y-4">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Your Details</h2>
-                        {error && <p className="text-red-500 text-center text-sm mb-4">{error}</p>}
-                        <div className="form-group">
-                            <label htmlFor="firstName" className="block text-gray-700 text-sm font-bold mb-2">First Name</label>
-                            <input
-                                type="text"
-                                id="firstName"
-                                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                placeholder="Enter your first name"
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                required
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="lastName" className="block text-gray-700 text-sm font-bold mb-2">Last Name (Optional)</label>
-                            <input
-                                type="text"
-                                id="lastName"
-                                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                placeholder="Enter your last name"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
-                            disabled={isLoading || !firstName}
-                        >
-                            {isLoading ? 'Processing...' : 'CONTINUE'}
-                        </button>
-                        <div className="text-center mt-4">
-                            <button
-                                type="button"
-                                onClick={() => { setSignupStage('initial'); setEmail(''); setError(''); setSuccessMessage(''); }}
-                                className="text-gray-600 hover:text-gray-800 font-medium text-sm underline"
-                                disabled={isLoading}
-                            >
-                                Go Back
-                            </button>
-                        </div>
-                    </form>
-                );
-
-            case 'password':
-                return (
-                    <form onSubmit={handleSignupPasswordSubmit} className="space-y-4">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Create Your Password</h2>
-                        {error && <p className="text-red-500 text-center text-sm mb-4">{error}</p>}
-                        {successMessage && <p className="text-green-500 text-center text-sm mb-4">{successMessage}</p>}
-                        <div className="form-group">
-                            <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Create Password</label>
-                            <input
-                                type="password"
-                                id="password"
-                                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                placeholder="Enter your password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                minLength="6"
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-bold mb-2">Confirm Password</label>
-                            <input
-                                type="password"
-                                id="confirmPassword"
-                                className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                placeholder="Confirm your password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-md"
-                            disabled={isLoading || !password || !confirmPassword || password !== confirmPassword}
-                        >
-                            {isLoading ? 'Creating Account...' : 'SUBMIT'}
-                        </button>
-                        <div className="text-center mt-4">
-                            <button
-                                type="button"
-                                onClick={() => { setSignupStage('details'); setError(''); setSuccessMessage(''); }}
-                                className="text-gray-600 hover:text-gray-800 font-medium text-sm underline"
-                                disabled={isLoading}
-                            >
-                                Go Back
-                            </button>
-                        </div>
-                    </form>
-                );
-
-            default:
-                return null;
-        }
-    };
-
-    // --- Main Component Render ---
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8 relative animate-fade-in-up">
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
-                >
-                    &times;
-                </button>
-
-                {/* Header Tabs (Login / Signup) */}
-                <div className="flex justify-center mb-6 border-b border-gray-200">
-                    <button
-                        onClick={() => handleTabSwitch('login')}
-                        className={`px-6 py-3 font-semibold transition-colors duration-200
-                            ${activeTab === 'login' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
-                    >
-                        LOGIN
-                    </button>
-                    <button
-                        onClick={() => handleTabSwitch('signup')}
-                        className={`ml-4 px-6 py-3 font-semibold transition-colors duration-200
-                            ${activeTab === 'signup' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
-                    >
-                        SIGNUP
-                    </button>
-                </div>
-
-                {/* Conditional Rendering based on activeTab */}
-                {activeTab === 'login' ? renderLoginContent() : renderSignupContent()}
-
-                {/* Footer text (common for both) */}
-                <p className="text-xs text-gray-500 text-center mt-6">
-                    By continuing, you agree to MyTripPlan's{' '}
-                    <a href="#" className="text-blue-500 hover:underline">Terms of Use</a> and{' '}
-                    <a href="#" className="text-blue-500 hover:underline">Privacy Policy</a>.
-                </p>
-            </div>
+  // ------------------- Render -------------------
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+      <div className="bg-white w-full max-w-md p-6 rounded-2xl shadow-lg">
+        {/* Tabs */}
+        <div className="flex justify-center mb-6">
+          <button
+            className={`px-4 py-2 font-semibold rounded-l-lg ${
+              activeTab === "login"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+            onClick={() => {
+              setActiveTab("login");
+              setSignupStage("email");
+              setError("");
+            }}
+          >
+            Login
+          </button>
+          <button
+            className={`px-4 py-2 font-semibold rounded-r-lg ${
+              activeTab === "signup"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+            onClick={() => {
+              setActiveTab("signup");
+              setSignupStage("email");
+              setError("");
+            }}
+          >
+            Sign Up
+          </button>
         </div>
-    );
+
+        {/* Form */}
+        <div className="space-y-4">
+          {activeTab === "login" ? (
+            <>
+              {/* Login with Password */}
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                onClick={handlePasswordLogin}
+                disabled={loading}
+                className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loading ? "Logging in..." : "Login with Password"}
+              </button>
+
+              {/* Login with OTP */}
+              <button
+                onClick={handleSendOtp}
+                disabled={loading}
+                className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+              >
+                {loading ? "Sending OTP..." : "Login with OTP"}
+              </button>
+
+              {signupStage === "otp" && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                  <button
+                    onClick={handleVerifyOtpAndProcess}
+                    disabled={loading}
+                    className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {loading ? "Verifying..." : "Verify OTP"}
+                  </button>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Signup with OTP flow */}
+              {signupStage === "email" && (
+                <>
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <button
+                    onClick={handleSendOtp}
+                    disabled={loading}
+                    className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? "Sending OTP..." : "Send OTP"}
+                  </button>
+                </>
+              )}
+              {signupStage === "otp" && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                  <button
+                    onClick={handleVerifyOtpAndProcess}
+                    disabled={loading}
+                    className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {loading ? "Verifying..." : "Verify OTP"}
+                  </button>
+                </>
+              )}
+              {signupStage === "details" && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    onClick={handleSignupPasswordSubmit}
+                    disabled={loading}
+                    className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? "Signing up..." : "Sign Up"}
+                  </button>
+                </>
+              )}
+            </>
+          )}
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+        </div>
+
+        {/* Close button */}
+        <div className="mt-6 text-center">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-sm underline"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default LoginSignup;
