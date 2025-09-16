@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 5000;
 
 // Allow multiple frontend origins (no .env for client URL)
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000"],
+  origin: ["http://localhost:5173","https://traveltrip-six.vercel.app", "http://localhost:3000"],
   credentials: true
 }));
 
