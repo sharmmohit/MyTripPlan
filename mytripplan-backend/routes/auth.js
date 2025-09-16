@@ -1,178 +1,70 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-const passport = require('passport');
-const User = require('../models/User');
-
+const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
 
-// Create JWT token
-const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
-  });
-};
+const JWT_SECRET = process.env.JWT_SECRET || "secret";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
-// Create and send token
-const createSendToken = (user, statusCode, res) => {
-  const token = signToken(user._id);
-  
-  // Remove password from output
-  user.password = undefined;
-  
-  res.status(statusCode).json({
-    status: 'success',
-    token,
-    user
-  });
-};
+// Helper to generate token
+function createToken(user) {
+  return jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
 
-// Email transporter
-const transporter = nodemailer.createTransport({
-  service: 'Gmail',
-  auth: {
-    user: process.env.EMAIL_USERNAME,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
-
-// Register
-router.post('/register', async (req, res) => {
+// REGISTER
+// POST /api/auth/register
+router.post("/register", async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
-    
-    // Check if user exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'User already exists with this email'
-      });
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Name, email and password are required" });
     }
-    
-    // Create verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    
-    // Create user
-    const user = await User.create({
-      firstName,
-      lastName,
-      email,
+
+    const existing = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existing) return res.status(400).json({ message: "Email already registered" });
+
+    const user = new User({
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
       password,
-      verificationToken
     });
-    
-    // Send verification email
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-    
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      to: user.email,
-      subject: 'Verify your email',
-      html: `
-        <h1>Email Verification</h1>
-        <p>Please click the link below to verify your email address:</p>
-        <a href="${verificationUrl}">Verify Email</a>
-      `
-    };
-    
-    await transporter.sendMail(mailOptions);
-    
-    res.status(201).json({
-      status: 'success',
-      message: 'User registered successfully. Please check your email to verify your account.'
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: error.message
-    });
+
+    await user.save();
+
+    const token = createToken(user);
+    const userSafe = { id: user._id, name: user.name, email: user.email };
+
+    return res.status(201).json({ message: "User created", token, user: userSafe });
+  } catch (err) {
+    console.error("Register error:", err);
+    return res.status(500).json({ message: "Server error during registration" });
   }
 });
 
-// Login
-router.post('/login', async (req, res) => {
+// LOGIN
+// POST /api/auth/login
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // Check if email and password exist
-    if (!email || !password) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Please provide email and password'
-      });
-    }
-    
-    // Check if user exists and password is correct
-    const user = await User.findOne({ email }).select('+password');
-    
-    if (!user || !(await user.correctPassword(password, user.password))) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'Incorrect email or password'
-      });
-    }
-    
-    // Check if email is verified
-    if (!user.isVerified) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'Please verify your email before logging in'
-      });
-    }
-    
-    // If everything ok, send token to client
-    createSendToken(user, 200, res);
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: error.message
-    });
+    if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+
+    const token = createToken(user);
+    const userSafe = { id: user._id, name: user.name, email: user.email };
+
+    return res.json({ message: "Login successful", token, user: userSafe });
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).json({ message: "Server error during login" });
   }
 });
 
-// Google OAuth routes
-router.get('/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
-
-router.get('/google/callback',
-  passport.authenticate('google', { session: false }),
-  (req, res) => {
-    // Successful authentication, generate JWT
-    createSendToken(req.user, 200, res);
-  }
-);
-
-// Verify email
-router.patch('/verify-email/:token', async (req, res) => {
-  try {
-    const user = await User.findOne({
-      verificationToken: req.params.token
-    });
-    
-    if (!user) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Invalid verification token'
-      });
-    }
-    
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    await user.save();
-    
-    res.status(200).json({
-      status: 'success',
-      message: 'Email verified successfully'
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: error.message
-    });
-  }
-});
+// Optional: GET /api/auth/me - verify token (middleware omitted for brevity)
+// You can add middleware to check token and return user info.
 
 module.exports = router;
