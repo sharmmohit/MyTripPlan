@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlane, FaHotel, FaTrain, FaBus, FaTaxi, FaFilm, FaGlobeAmericas, FaMapMarkerAlt, FaShieldAlt, FaGift, FaUser } from 'react-icons/fa';
+import { FaPlane, FaHotel, FaTrain, FaBus, FaTaxi, FaFilm, FaGlobeAmericas, FaMapMarkerAlt, FaShieldAlt, FaGift, FaUser, FaBars } from 'react-icons/fa';
 import { HiOutlineOfficeBuilding } from 'react-icons/hi';
 import FlightSearchTab from './Flights/FlightSearchTab';
 import TrainSearchTab from './Trains/TrainSearchTab';
@@ -16,6 +16,7 @@ const Home = () => {
   const [fareType, setFareType] = useState('regular');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -69,30 +70,32 @@ const Home = () => {
   return (
     <div className="min-h-screen font-sans antialiased flex flex-col bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header Section */}
-      <header className="bg-white shadow-sm py-3 px-4 md:px-6 lg:px-12 relative z-10">
-        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center mb-2 md:mb-0">
-            <span className="text-3xl md:text-4xl font-extrabold text-blue-600 tracking-tighter mr-1">My</span>
-            <span className="text-3xl md:text-4xl font-extrabold text-orange-500 tracking-tighter">TripPlan</span>
+      <header className="bg-white shadow-sm py-3 px-4 md:px-6 lg:px-12 relative z-20">
+        <div className="container mx-auto flex justify-between items-center">
+          {/* Logo on left side */}
+          <div className="flex items-center">
+            <span className="text-2xl md:text-3xl font-extrabold text-blue-600 tracking-tighter mr-1">Travel</span>
+            <span className="text-2xl md:text-3xl font-extrabold text-orange-500 tracking-tighter">Trip</span>
           </div>
 
-          <nav className="flex items-center space-x-2 md:space-x-4 text-gray-700 text-sm">
+          {/* Login/Logout button on right side */}
+          <nav className="flex items-center">
             {user ? (
-              <>
-                <span className="font-semibold text-sm md:text-base">Hi, {user.firstName || user.email}!</span>
+              <div className="flex items-center space-x-2">
+                <span className="hidden md:block font-semibold text-sm md:text-base">Hi, {user.firstName || user.email}!</span>
                 <button
                   onClick={handleLogout}
                   className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 font-medium shadow-sm text-xs md:text-sm"
                 >
                   Logout
                 </button>
-              </>
+              </div>
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
                 className="flex items-center px-3 py-1.5 md:px-4 md:py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-200 font-medium shadow-sm text-xs md:text-sm"
               >
-                <FaUser className="mr-1 md:mr-2 text-sm md:text-base" />
+                <FaUser className="mr-1 md:mr-2" />
                 <span className="font-semibold">Login</span>
               </button>
             )}
@@ -100,14 +103,25 @@ const Home = () => {
         </div>
       </header>
 
-      {/* Travel Icons Navigation */}
-      <div className="bg-white shadow-md py-3 md:py-4 px-2 md:px-4 relative z-10" style={{
+      {/* Mobile Navigation Toggle */}
+      <div className="md:hidden bg-white border-t border-b border-gray-200 py-2 px-4">
+        <button 
+          onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+          className="flex items-center justify-center w-full py-2 text-gray-700 font-medium"
+        >
+          <FaBars className="mr-2" />
+          Travel Categories
+        </button>
+      </div>
+
+      {/* Travel Icons Navigation - Desktop */}
+      <div className="hidden md:block bg-white shadow-md py-3 md:py-4 px-2 md:px-4 relative z-10" style={{
         background: "linear-gradient(to bottom, white 80%, rgba(255,255,255,0.8))",
         boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
       }}>
         <div className="container mx-auto">
           <div className="flex justify-center">
-            <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 md:gap-2 w-full max-w-5xl">
+            <div className="grid grid-cols-7 gap-1 md:gap-2 w-full max-w-5xl">
               <NavTabButton 
                 label="Flights" 
                 icon={<FaPlane className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
@@ -154,6 +168,56 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Navigation Dropdown */}
+      {isMobileNavOpen && (
+        <div className="md:hidden bg-white shadow-lg py-3 px-4 border-b border-gray-200">
+          <div className="grid grid-cols-2 gap-3">
+            <MobileNavButton 
+              label="Flights" 
+              icon={<FaPlane className="text-blue-600" size={16} />} 
+              isActive={activeTab === 'flights'} 
+              onClick={() => { setActiveTab('flights'); setIsMobileNavOpen(false); }} 
+            />
+            <MobileNavButton 
+              label="Hotels" 
+              icon={<FaHotel className="text-blue-600" size={16} />} 
+              isActive={activeTab === 'hotels'} 
+              onClick={() => { setActiveTab('hotels'); setIsMobileNavOpen(false); }} 
+            />
+            <MobileNavButton 
+              label="Trains" 
+              icon={<FaTrain className="text-blue-600" size={16} />} 
+              isActive={activeTab === 'trains'} 
+              onClick={() => { setActiveTab('trains'); setIsMobileNavOpen(false); }} 
+            />
+            <MobileNavButton 
+              label="Buses" 
+              icon={<FaBus className="text-blue-600" size={16} />} 
+              isActive={activeTab === 'buses'} 
+              onClick={() => { setActiveTab('buses'); setIsMobileNavOpen(false); }} 
+            />
+            <MobileNavButton 
+              label="Cabs" 
+              icon={<FaTaxi className="text-blue-600" size={16} />} 
+              isActive={activeTab === 'cabs'} 
+              onClick={() => { setActiveTab('cabs'); setIsMobileNavOpen(false); }} 
+            />
+            <MobileNavButton 
+              label="Cinema" 
+              icon={<FaFilm className="text-blue-600" size={16} />} 
+              isActive={activeTab === 'cinema'} 
+              onClick={() => { setActiveTab('cinema'); setIsMobileNavOpen(false); }} 
+            />
+            <MobileNavButton 
+              label="Tours" 
+              icon={<FaGlobeAmericas className="text-blue-600" size={16} />} 
+              isActive={activeTab === 'tour-packages'} 
+              onClick={() => { setActiveTab('tour-packages'); setIsMobileNavOpen(false); }} 
+            />
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-grow container mx-auto px-3 md:px-4 py-6 md:py-8 relative z-0">
@@ -217,7 +281,7 @@ const Home = () => {
       {/* Footer Section */}
       <footer className="bg-gray-800 text-white py-4 md:py-6 px-4 md:px-6 lg:px-12 mt-6 md:mt-8">
         <div className="container mx-auto text-center text-xs md:text-sm">
-          <p>&copy; {new Date().getFullYear()} MyTripPlan. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} TravelTrip. All rights reserved.</p>
           <p className="mt-2">
             <a href="#" className="hover:text-blue-400 mx-1 md:mx-2 transition-colors duration-300">Privacy Policy</a> |
             <a href="#" className="hover:text-blue-400 mx-1 md:mx-2 transition-colors duration-300">Terms of Service</a> |
@@ -251,6 +315,20 @@ const NavTabButton = ({ label, icon, isActive, onClick }) => (
       {icon}
     </span>
     <span className="text-xs font-medium">{label}</span>
+  </button>
+);
+
+const MobileNavButton = ({ label, icon, isActive, onClick }) => (
+  <button
+    className={`flex items-center py-2 px-3 rounded-lg transition-all duration-200 text-sm
+      ${isActive
+        ? 'bg-blue-100 text-blue-700 font-medium'
+        : 'text-gray-700 hover:bg-gray-100'
+      }`}
+    onClick={onClick}
+  >
+    <span className="mr-2">{icon}</span>
+    {label}
   </button>
 );
 
