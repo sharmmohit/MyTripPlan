@@ -4,7 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import loginBg from "./loginimage.png"
+import loginBg from "./loginimage.png";
+import { API_BASE } from "../config";
 
 const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ const Login = ({ onLoginSuccess }) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const backendUrl = "http://localhost:5000/api/auth";
+  const backendUrl = `${API_BASE}/auth`;
   const navigate = useNavigate();
 
   const handleLogin = async () => {
@@ -46,13 +47,36 @@ const Login = ({ onLoginSuccess }) => {
     }
   };
 
+  const handleClose = (e) => {
+    e.stopPropagation(); // Prevent event bubbling
+    navigate("/home");
+  };
+
+  const handleBackdropClick = (e) => {
+    // Close modal if clicked on backdrop (outside the modal content)
+    if (e.target === e.currentTarget) {
+      navigate("/home");
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row relative">
+        {/* Close button - positioned absolutely */}
+        <button 
+          onClick={handleClose}
+          className="absolute top-3 right-3 z-10 text-gray-500 hover:text-gray-700 text-xl md:text-2xl font-bold focus:outline-none bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-md"
+        >
+          &times;
+        </button>
+        
         {/* Left side with background image */}
         <div 
           className="hidden md:block md:w-2/5 bg-cover bg-center"
-          style={{ backgroundImage: {loginBg} }}
+          style={{ backgroundImage: `url(${loginBg})` }}
         >
           <div className="h-full bg-blue-900 bg-opacity-70 flex items-center justify-center p-6">
             <div className="text-white text-center">
@@ -66,9 +90,13 @@ const Login = ({ onLoginSuccess }) => {
         <div className="w-full md:w-3/5 p-6">
           <div className="flex justify-between items-center mb-5">
             <h2 className="text-xl font-bold text-gray-800">Login</h2>
-            <Link to="/home" className="text-gray-500 hover:text-gray-700 text-lg">
+            {/* This button is hidden on desktop since we have the absolute positioned one */}
+            <button 
+              onClick={handleClose}
+              className="md:hidden text-gray-500 hover:text-gray-700 text-lg focus:outline-none"
+            >
               &times;
-            </Link>
+            </button>
           </div>
           
           <div className="space-y-3">
