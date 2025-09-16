@@ -317,7 +317,7 @@ const FlightSearchTab = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-lg disabled:opacity-50"
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold text-lg disabled:opacity-50"
                 >
                     {loading ? 'Searching...' : 'Search Flights'}
                 </button>

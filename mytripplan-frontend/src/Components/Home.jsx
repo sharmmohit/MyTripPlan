@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlane, FaHotel, FaTrain, FaBus, FaTaxi, FaFilm, FaGlobeAmericas, FaMapMarkerAlt, FaShieldAlt, FaGift } from 'react-icons/fa';
+import { FaPlane, FaHotel, FaTrain, FaBus, FaTaxi, FaFilm, FaGlobeAmericas, FaMapMarkerAlt, FaShieldAlt, FaGift, FaUser } from 'react-icons/fa';
 import { HiOutlineOfficeBuilding } from 'react-icons/hi';
-import LoginSignup from './LoginSignup';
 import FlightSearchTab from './Flights/FlightSearchTab';
 import TrainSearchTab from './Trains/TrainSearchTab';
 import BusSearchTab from './Buses/BusSearchTab';
@@ -9,6 +8,7 @@ import CabSearchTab from './Cabs/CabSearchTab';
 import CinemaSearchTab from './Cinema/CinemaSearchTab';
 import HotelSearchTab from './HotelSearchTab';
 import HotelSearch from './HotelSearch';
+import Login from './Login';
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState('flights');
@@ -18,7 +18,7 @@ const Home = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('jwtToken');
+    const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     if (storedToken && storedUser) {
       try {
@@ -26,21 +26,21 @@ const Home = () => {
       } catch (e) {
         console.error("Failed to parse stored user data:", e);
         localStorage.removeItem('user');
-        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('token');
       }
     }
   }, []);
 
   const handleLoginSuccess = (userData, token) => {
     setUser(userData);
-    localStorage.setItem('jwtToken', token);
+    localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
     setIsAuthModalOpen(false);
   };
 
   const handleLogout = () => {
     setUser(null);
-    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
     alert('Logged out successfully!');
   };
@@ -69,20 +69,20 @@ const Home = () => {
   return (
     <div className="min-h-screen font-sans antialiased flex flex-col bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header Section */}
-      <header className="bg-white shadow-md py-3 px-6 md:px-12 relative z-10">
-        <div className="container mx-auto flex flex-wrap justify-between items-center">
-          <div className="flex items-center">
-            <span className="text-4xl font-extrabold text-blue-600 tracking-tighter mr-1">My</span>
-            <span className="text-4xl font-extrabold text-orange-500 tracking-tighter">TripPlan</span>
+      <header className="bg-white shadow-sm py-3 px-4 md:px-6 lg:px-12 relative z-10">
+        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center mb-2 md:mb-0">
+            <span className="text-3xl md:text-4xl font-extrabold text-blue-600 tracking-tighter mr-1">My</span>
+            <span className="text-3xl md:text-4xl font-extrabold text-orange-500 tracking-tighter">TripPlan</span>
           </div>
 
-          <nav className="flex items-center space-x-4 text-gray-700 text-sm mt-2 md:mt-0">
+          <nav className="flex items-center space-x-2 md:space-x-4 text-gray-700 text-sm">
             {user ? (
               <>
-                <span className="font-semibold text-base">Hi, {user.firstName || user.email}!</span>
+                <span className="font-semibold text-sm md:text-base">Hi, {user.firstName || user.email}!</span>
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-200"
+                  className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 font-medium shadow-sm text-xs md:text-sm"
                 >
                   Logout
                 </button>
@@ -90,97 +90,104 @@ const Home = () => {
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-100 transition duration-200"
+                className="flex items-center px-3 py-1.5 md:px-4 md:py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-200 font-medium shadow-sm text-xs md:text-sm"
               >
-                <span className="text-xl mb-1">👤</span>
-                <span className="font-semibold text-xs md:text-sm">Login or Create Account</span>
+                <FaUser className="mr-1 md:mr-2 text-sm md:text-base" />
+                <span className="font-semibold">Login</span>
               </button>
             )}
           </nav>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-grow container mx-auto px-4 py-8 -mt-16 md:-mt-12 relative z-0">
-        {/* Booking Tabs and Search Form */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8 mt-16 md:mt-12">
-          {/* Transportation Icons - Centered and Full Width */}
-          <div className="flex justify-center w-full mb-6">
-            <div className="grid grid-cols-7 gap-2 md:gap-4 w-full max-w-4xl">
-              <TabButton 
+      {/* Travel Icons Navigation */}
+      <div className="bg-white shadow-md py-3 md:py-4 px-2 md:px-4 relative z-10" style={{
+        background: "linear-gradient(to bottom, white 80%, rgba(255,255,255,0.8))",
+        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+      }}>
+        <div className="container mx-auto">
+          <div className="flex justify-center">
+            <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 md:gap-2 w-full max-w-5xl">
+              <NavTabButton 
                 label="Flights" 
-                icon={<FaPlane className="mx-auto" size={20} />} 
+                icon={<FaPlane className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'flights'} 
                 onClick={() => setActiveTab('flights')} 
               />
-              <TabButton 
+              <NavTabButton 
                 label="Hotels" 
-                icon={<FaHotel className="mx-auto" size={20} />} 
+                icon={<FaHotel className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'hotels'} 
                 onClick={() => setActiveTab('hotels')} 
               />
-              <TabButton 
+              <NavTabButton 
                 label="Trains" 
-                icon={<FaTrain className="mx-auto" size={20} />} 
+                icon={<FaTrain className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'trains'} 
                 onClick={() => setActiveTab('trains')} 
               />
-              <TabButton 
+              <NavTabButton 
                 label="Buses" 
-                icon={<FaBus className="mx-auto" size={20} />} 
+                icon={<FaBus className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'buses'} 
                 onClick={() => setActiveTab('buses')} 
               />
-              <TabButton 
+              <NavTabButton 
                 label="Cabs" 
-                icon={<FaTaxi className="mx-auto" size={20} />} 
+                icon={<FaTaxi className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'cabs'} 
                 onClick={() => setActiveTab('cabs')} 
               />
-              <TabButton 
+              <NavTabButton 
                 label="Cinema" 
-                icon={<FaFilm className="mx-auto" size={20} />} 
+                icon={<FaFilm className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'cinema'} 
                 onClick={() => setActiveTab('cinema')} 
               />
-              <TabButton 
+              <NavTabButton 
                 label="Tours" 
-                icon={<FaGlobeAmericas className="mx-auto" size={20} />} 
+                icon={<FaGlobeAmericas className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'tour-packages'} 
                 onClick={() => setActiveTab('tour-packages')} 
               />
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* Main Content Area */}
+      <main className="flex-grow container mx-auto px-3 md:px-4 py-6 md:py-8 relative z-0">
+        {/* Booking Tabs and Search Form */}
+        <div className="bg-transparent rounded-xl mb-6 md:mb-8">
           {renderTabContent()}
         </div>
 
         {/* Explore More Section */}
-        <section className="rounded-xl shadow-lg p-6 mb-8 bg-gradient-to-r from-blue-50 to-purple-50">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Explore More</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <section className="rounded-xl shadow-lg p-4 md:p-6 mb-6 md:mb-8 bg-gradient-to-r from-blue-50 to-purple-50">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 text-center">Explore More</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
             <ExploreCard 
-              icon={<FaMapMarkerAlt size={24} className="text-blue-600" />} 
+              icon={<FaMapMarkerAlt size={20} className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
               title="Where2Go" 
               description="Discover new destinations" 
             />
             <ExploreCard 
-              icon={<FaShieldAlt size={24} className="text-green-600" />} 
+              icon={<FaShieldAlt size={20} className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
               title="Insurance" 
               description="For International Trips" 
             />
             <ExploreCard 
-              icon={<FaPlane size={24} className="text-red-600" />} 
+              icon={<FaPlane size={20} className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
               title="International Flights" 
               description="Cheapest Flights worldwide" 
             />
             <ExploreCard 
-              icon={<HiOutlineOfficeBuilding size={24} className="text-purple-600" />} 
+              icon={<HiOutlineOfficeBuilding size={20} className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
               title="MICE" 
               description="Offsites & Meetings" 
             />
             <ExploreCard 
-              icon={<FaGift size={24} className="text-orange-600" />} 
+              icon={<FaGift size={20} className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
               title="Gift Cards" 
               description="Give the gift of travel" 
             />
@@ -188,41 +195,40 @@ const Home = () => {
         </section>
 
         {/* Featured Sections */}
-        <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           <Card 
             title="Exclusive Flight Deals" 
             description="Find the best prices for your next adventure." 
-            icon={<FaPlane size={32} className="text-blue-500 mb-4" />}
+            icon={<FaPlane size={28} className="text-blue-600 mb-3 md:mb-4 group-hover:text-orange-500 transition-colors duration-300" />}
           />
           <Card 
             title="Luxury Hotel Stays" 
             description="Book your dream vacation with top-rated hotels." 
-            icon={<FaHotel size={32} className="text-green-500 mb-4" />}
+            icon={<FaHotel size={28} className="text-blue-600 mb-3 md:mb-4 group-hover:text-orange-500 transition-colors duration-300" />}
           />
           <Card 
             title="Exciting Tour Packages" 
             description="Explore new destinations with curated packages." 
-            icon={<FaGlobeAmericas size={32} className="text-purple-500 mb-4" />}
+            icon={<FaGlobeAmericas size={28} className="text-blue-600 mb-3 md:mb-4 group-hover:text-orange-500 transition-colors duration-300" />}
           />
         </section>
       </main>
 
       {/* Footer Section */}
-      <footer className="bg-gray-800 text-white py-6 px-6 md:px-12">
-        <div className="container mx-auto text-center text-sm">
+      <footer className="bg-gray-800 text-white py-4 md:py-6 px-4 md:px-6 lg:px-12 mt-6 md:mt-8">
+        <div className="container mx-auto text-center text-xs md:text-sm">
           <p>&copy; {new Date().getFullYear()} MyTripPlan. All rights reserved.</p>
           <p className="mt-2">
-            <a href="#" className="hover:text-blue-400 mx-2">Privacy Policy</a> |
-            <a href="#" className="hover:text-blue-400 mx-2">Terms of Service</a> |
-            <a href="#" className="hover:text-blue-400 mx-2">Contact Us</a>
+            <a href="#" className="hover:text-blue-400 mx-1 md:mx-2 transition-colors duration-300">Privacy Policy</a> |
+            <a href="#" className="hover:text-blue-400 mx-1 md:mx-2 transition-colors duration-300">Terms of Service</a> |
+            <a href="#" className="hover:text-blue-400 mx-1 md:mx-2 transition-colors duration-300">Contact Us</a>
           </p>
         </div>
       </footer>
 
-      {/* Login/Signup Modal */}
+      {/* Login Modal */}
       {isAuthModalOpen && (
-        <LoginSignup
-          onClose={() => setIsAuthModalOpen(false)}
+        <Login 
           onLoginSuccess={handleLoginSuccess}
         />
       )}
@@ -231,9 +237,9 @@ const Home = () => {
 };
 
 // Reusable Components
-const TabButton = ({ label, icon, isActive, onClick }) => (
+const NavTabButton = ({ label, icon, isActive, onClick }) => (
   <button
-    className={`flex flex-col items-center space-y-1 px-2 py-3 rounded-lg transition-all duration-300 ease-in-out text-center
+    className={`group flex flex-col items-center space-y-1 px-1.5 py-2 md:px-2 md:py-3 rounded-lg transition-all duration-300 ease-in-out text-center
       ${isActive
         ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600 font-bold'
         : 'text-gray-700 hover:bg-gray-100'
@@ -241,35 +247,35 @@ const TabButton = ({ label, icon, isActive, onClick }) => (
       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
     onClick={onClick}
   >
-    <span className="flex items-center justify-center w-6 h-6 mx-auto">
+    <span className="flex items-center justify-center w-5 h-5 md:w-6 md:h-6 mx-auto">
       {icon}
     </span>
-    <span className="text-xs md:text-sm">{label}</span>
+    <span className="text-xs font-medium">{label}</span>
   </button>
 );
 
 const PlaceholderTab = ({ title }) => (
-  <div className="p-4 text-center text-gray-600 text-lg min-h-[200px] flex items-center justify-center flex-col">
-    <h2 className="text-2xl font-bold text-gray-800 mb-4">{title} Booking</h2>
-    <p>Functionality for {title} booking will be implemented soon!</p>
-    <p className="mt-2 text-sm">Stay tuned for exciting updates.</p>
+  <div className="p-4 text-center text-gray-600 text-base md:text-lg min-h-[180px] md:min-h-[200px] flex items-center justify-center flex-col bg-white rounded-xl shadow-md mt-4">
+    <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-3 md:mb-4">{title} Booking</h2>
+    <p className="text-sm md:text-base">Functionality for {title} booking will be implemented soon!</p>
+    <p className="mt-2 text-xs md:text-sm">Stay tuned for exciting updates.</p>
   </div>
 );
 
 const ExploreCard = ({ icon, title, description }) => (
-  <div className="flex flex-col items-center text-center p-4 bg-white rounded-lg hover:shadow-md transition duration-200 cursor-pointer">
-    <div className="mb-2">{icon}</div>
-    <h4 className="text-sm font-semibold text-gray-800">{title}</h4>
+  <div className="group flex flex-col items-center text-center p-3 md:p-4 bg-white rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer">
+    <div className="mb-1.5 md:mb-2">{icon}</div>
+    <h4 className="text-xs md:text-sm font-semibold text-gray-800">{title}</h4>
     <p className="text-xs text-gray-500 mt-1">{description}</p>
   </div>
 );
 
 const Card = ({ title, description, icon }) => (
-  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center hover:shadow-lg transition">
+  <div className="group bg-white rounded-xl shadow-md p-4 md:p-6 flex flex-col items-center text-center hover:shadow-lg transition-all duration-300">
     {icon}
-    <h3 className="text-xl font-semibold text-gray-800 mb-2">{title}</h3>
-    <p className="text-gray-600 mb-4">{description}</p>
-    <button className="mt-auto bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-full transition duration-300">
+    <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-2">{title}</h3>
+    <p className="text-gray-600 text-sm md:text-base mb-3 md:mb-4">{description}</p>
+    <button className="mt-auto bg-blue-500 hover:bg-orange-500 text-white font-medium py-1.5 px-3 md:py-2 md:px-4 rounded-full transition-all duration-300 text-xs md:text-sm">
       Learn More
     </button>
   </div>
