@@ -319,7 +319,7 @@ const Home = () => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-purple-600 z-30 transition-colors duration-300">
         <div className="grid grid-cols-4 gap-1 py-2">
           <MobileBottomNavButton 
             icon={<FaHome size={18} />}
@@ -404,10 +404,10 @@ const MobileNavButton = ({ label, icon, isActive, onClick }) => (
 
 const MobileBottomNavButton = ({ icon, label, isActive, onClick }) => (
   <button
-    className={`flex flex-col items-center justify-center py-2 transition-all duration-200
+    className={`flex flex-col items-center justify-center py-2 transition-all duration-300 rounded-lg mx-1
       ${isActive
-        ? 'text-blue-600'
-        : 'text-gray-600'
+        ? 'text-white bg-purple-700 shadow-sm'
+        : 'text-purple-200 hover:text-white'
       }`}
     onClick={onClick}
   >
