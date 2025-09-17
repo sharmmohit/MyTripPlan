@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlane, FaHotel, FaTrain, FaBus, FaTaxi, FaFilm, FaGlobeAmericas, FaMapMarkerAlt, FaShieldAlt, FaGift, FaUser, FaBars } from 'react-icons/fa';
+import { FaPlane, FaHotel, FaTrain, FaBus, FaTaxi, FaFilm, FaTicketAlt, FaGlobeAmericas, FaMapMarkerAlt, FaShieldAlt, FaGift, FaUser, FaBars, FaHome, FaSuitcase, FaPercent, FaUserCircle } from 'react-icons/fa';
 import { HiOutlineOfficeBuilding } from 'react-icons/hi';
 import FlightSearchTab from './Flights/FlightSearchTab';
 import TrainSearchTab from './Trains/TrainSearchTab';
@@ -17,6 +17,7 @@ const Home = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [mobileBottomNav, setMobileBottomNav] = useState('home');
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -38,12 +39,44 @@ const Home = () => {
     localStorage.setItem('user', JSON.stringify(userData));
     setIsAuthModalOpen(false);
   };
+  
+  const handleMyTickets = () => {
+    // Logic to show user's tickets
+    alert('My Tickets functionality will be implemented soon!');
+  };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     alert('Logged out successfully!');
+  };
+
+  const handleMobileBottomNav = (navItem) => {
+    setMobileBottomNav(navItem);
+    
+    // Handle navigation actions
+    switch(navItem) {
+      case 'home':
+        // Already on home, do nothing or scroll to top
+        window.scrollTo(0, 0);
+        break;
+      case 'trips':
+        alert('My Trips functionality will be implemented soon!');
+        break;
+      case 'offers':
+        alert('Offers functionality will be implemented soon!');
+        break;
+      case 'account':
+        if (!user) {
+          setIsAuthModalOpen(true);
+        } else {
+          alert('Account management will be implemented soon!');
+        }
+        break;
+      default:
+        break;
+    }
   };
 
   const renderTabContent = () => {
@@ -68,7 +101,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen font-sans antialiased flex flex-col bg-gradient-to-b from-gray-50 to-gray-100">
+    <div className="min-h-screen font-sans antialiased flex flex-col bg-gradient-to-b from-gray-50 to-gray-100 pb-16 md:pb-0">
       {/* Header Section */}
       <header className="bg-white shadow-sm py-3 px-4 md:px-6 lg:px-12 relative z-20">
         <div className="container mx-auto flex justify-between items-center">
@@ -79,7 +112,14 @@ const Home = () => {
           </div>
 
           {/* Login/Logout button on right side */}
-          <nav className="flex items-center">
+          <nav className="flex items-center  space-x-4">
+             <button
+              onClick={handleMyTickets}
+              className="flex items-center text-blue-600 hover:text-blue-800 transition duration-200 font-medium text-xs md:text-sm"
+            >
+              <FaTicketAlt className="mr-1 md:mr-2" />
+              <span className="font-semibold hidden md:block">My Tickets</span>
+            </button>
             {user ? (
               <div className="flex items-center space-x-2">
                 <span className="hidden md:block font-semibold text-sm md:text-base">Hi, {user.firstName || user.email}!</span>
@@ -278,6 +318,36 @@ const Home = () => {
         </section>
       </main>
 
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
+        <div className="grid grid-cols-4 gap-1 py-2">
+          <MobileBottomNavButton 
+            icon={<FaHome size={18} />}
+            label="Home"
+            isActive={mobileBottomNav === 'home'}
+            onClick={() => handleMobileBottomNav('home')}
+          />
+          <MobileBottomNavButton 
+            icon={<FaSuitcase size={18} />}
+            label="My Trips"
+            isActive={mobileBottomNav === 'trips'}
+            onClick={() => handleMobileBottomNav('trips')}
+          />
+          <MobileBottomNavButton 
+            icon={<FaPercent size={18} />}
+            label="Offers"
+            isActive={mobileBottomNav === 'offers'}
+            onClick={() => handleMobileBottomNav('offers')}
+          />
+          <MobileBottomNavButton 
+            icon={<FaUserCircle size={18} />}
+            label="Account"
+            isActive={mobileBottomNav === 'account'}
+            onClick={() => handleMobileBottomNav('account')}
+          />
+        </div>
+      </div>
+
       {/* Footer Section */}
       <footer className="bg-gray-800 text-white py-4 md:py-6 px-4 md:px-6 lg:px-12 mt-6 md:mt-8">
         <div className="container mx-auto text-center text-xs md:text-sm">
@@ -329,6 +399,20 @@ const MobileNavButton = ({ label, icon, isActive, onClick }) => (
   >
     <span className="mr-2">{icon}</span>
     {label}
+  </button>
+);
+
+const MobileBottomNavButton = ({ icon, label, isActive, onClick }) => (
+  <button
+    className={`flex flex-col items-center justify-center py-2 transition-all duration-200
+      ${isActive
+        ? 'text-blue-600'
+        : 'text-gray-600'
+      }`}
+    onClick={onClick}
+  >
+    {icon}
+    <span className="text-xs mt-1">{label}</span>
   </button>
 );
 
