@@ -102,30 +102,30 @@ const Home = () => {
 
   return (
     <div className="min-h-screen font-sans antialiased flex flex-col bg-gradient-to-b from-gray-50 to-gray-100 pb-16 md:pb-0">
-      {/* Header Section */}
-      <header className="bg-white shadow-sm py-3 px-4 md:px-6 lg:px-12 relative z-20">
+      {/* Header Section - Changed to purple-700 */}
+      <header className="bg-purple-500 shadow-sm py-3 px-4 md:px-6 lg:px-12 relative z-20">
         <div className="container mx-auto flex justify-between items-center">
           {/* Logo on left side */}
           <div className="flex items-center">
-            <span className="text-2xl md:text-3xl font-extrabold text-blue-600 tracking-tighter mr-1">Travel</span>
-            <span className="text-2xl md:text-3xl font-extrabold text-orange-500 tracking-tighter">Trip</span>
+            <span className="text-2xl md:text-3xl font-extrabold text-blue-100 tracking-tighter mr-1">Travel</span>
+            <span className="text-2xl md:text-3xl font-extrabold text-orange-400 tracking-tighter">Trip</span>
           </div>
 
           {/* Login/Logout button on right side */}
-          <nav className="flex items-center  space-x-4">
+          <nav className="flex items-center space-x-4">
              <button
               onClick={handleMyTickets}
-              className="flex items-center text-blue-600 hover:text-blue-800 transition duration-200 font-medium text-xs md:text-sm"
+              className="flex items-center text-white hover:text-blue-300 transition duration-200 font-medium text-xs md:text-sm"
             >
               <FaTicketAlt className="mr-1 md:mr-2" />
               <span className="font-semibold hidden md:block">My Tickets</span>
             </button>
             {user ? (
               <div className="flex items-center space-x-2">
-                <span className="hidden md:block font-semibold text-sm md:text-base">Hi, {user.firstName || user.email}!</span>
+                <span className="hidden md:block font-semibold text-sm md:text-base text-white">Hi, {user.firstName || user.email}!</span>
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 font-medium shadow-sm text-xs md:text-sm"
+                  className="px-3 py-1.5 md:px-4 md:py-2 bg-white text-purple-700 rounded-lg hover:bg-blue-100 transition duration-200 font-medium shadow-sm text-xs md:text-sm"
                 >
                   Logout
                 </button>
@@ -133,7 +133,7 @@ const Home = () => {
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="flex items-center px-3 py-1.5 md:px-4 md:py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-200 font-medium shadow-sm text-xs md:text-sm"
+                className="flex items-center px-3 py-1.5 md:px-4 md:py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-400 transition duration-200 font-medium shadow-sm text-xs md:text-sm"
               >
                 <FaUser className="mr-1 md:mr-2" />
                 <span className="font-semibold">Login</span>
@@ -318,8 +318,8 @@ const Home = () => {
         </section>
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-purple-600 z-30 transition-colors duration-300">
+      {/* Mobile Bottom Navigation - Changed to purple-700 with white text that changes to blue on hover */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-purple-700 z-30 transition-colors duration-300">
         <div className="grid grid-cols-4 gap-1 py-2">
           <MobileBottomNavButton 
             icon={<FaHome size={18} />}
@@ -406,8 +406,8 @@ const MobileBottomNavButton = ({ icon, label, isActive, onClick }) => (
   <button
     className={`flex flex-col items-center justify-center py-2 transition-all duration-300 rounded-lg mx-1
       ${isActive
-        ? 'text-white bg-purple-700 shadow-sm'
-        : 'text-purple-200 hover:text-white'
+        ? 'text-blue-300 bg-purple-800 shadow-sm'
+        : 'text-white hover:text-blue-300'
       }`}
     onClick={onClick}
   >
