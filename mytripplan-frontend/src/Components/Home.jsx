@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlane, FaHotel, FaTrain, FaBus, FaTaxi, FaFilm, FaTicketAlt, FaGlobeAmericas, FaMapMarkerAlt, FaShieldAlt, FaGift, FaUser, FaBars, FaHome, FaSuitcase, FaPercent, FaUserCircle } from 'react-icons/fa';
+import { FaPlane, FaHotel, FaTrain, FaBus, FaTaxi, FaFilm, FaTicketAlt, FaGlobeAmericas, FaMapMarkerAlt, FaShieldAlt, FaGift, FaUser, FaBars, FaHome, FaSuitcase, FaPercent, FaUserCircle, FaWallet, FaCog, FaCreditCard, FaSignOutAlt, FaTimes } from 'react-icons/fa';
 import { HiOutlineOfficeBuilding } from 'react-icons/hi';
 import FlightSearchTab from './Flights/FlightSearchTab';
 import TrainSearchTab from './Trains/TrainSearchTab';
@@ -18,13 +18,17 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [mobileBottomNav, setMobileBottomNav] = useState('home');
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     if (storedToken && storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        // Show welcome banner only if user just logged in (you might want to use a more sophisticated check)
+        setShowWelcomeBanner(true);
       } catch (e) {
         console.error("Failed to parse stored user data:", e);
         localStorage.removeItem('user');
@@ -38,10 +42,10 @@ const Home = () => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
     setIsAuthModalOpen(false);
+    setShowWelcomeBanner(true);
   };
   
   const handleMyTickets = () => {
-    // Logic to show user's tickets
     alert('My Tickets functionality will be implemented soon!');
   };
 
@@ -49,6 +53,7 @@ const Home = () => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    setMobileBottomNav('home');
     alert('Logged out successfully!');
   };
 
@@ -58,7 +63,6 @@ const Home = () => {
     // Handle navigation actions
     switch(navItem) {
       case 'home':
-        // Already on home, do nothing or scroll to top
         window.scrollTo(0, 0);
         break;
       case 'trips':
@@ -68,11 +72,7 @@ const Home = () => {
         alert('Offers functionality will be implemented soon!');
         break;
       case 'account':
-        if (!user) {
-          setIsAuthModalOpen(true);
-        } else {
-          alert('Account management will be implemented soon!');
-        }
+        // Account section is handled in the render
         break;
       default:
         break;
@@ -100,9 +100,51 @@ const Home = () => {
     }
   };
 
+  const renderAccountSection = () => (
+    <div className="min-h-screen bg-gray-50 p-4">
+      {/* Header */}
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <h1 className="text-2xl font-bold text-purple-700 mb-2">HELLO Tourist!</h1>
+        <p className="text-gray-600">{user?.email}</p>
+      </div>
+
+      {/* Account Options */}
+      <div className="space-y-3">
+        <AccountOption 
+          icon={<FaWallet className="text-purple-600" />}
+          title="Wallet"
+          description="Manage your travel funds"
+          onClick={() => alert('Wallet functionality coming soon!')}
+        />
+        
+        <AccountOption 
+          icon={<FaCog className="text-purple-600" />}
+          title="Settings"
+          description="Customize your experience"
+          onClick={() => alert('Settings functionality coming soon!')}
+        />
+        
+        <AccountOption 
+          icon={<FaCreditCard className="text-purple-600" />}
+          title="Payment Options"
+          description="Manage payment methods"
+          onClick={() => alert('Payment options functionality coming soon!')}
+        />
+        
+        <AccountOption 
+          icon={<FaSignOutAlt className="text-red-600" />}
+          title="Sign Out"
+          description="Log out of your account"
+          onClick={handleLogout}
+          isSignOut
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen font-sans antialiased flex flex-col bg-gradient-to-b from-gray-50 to-gray-100 pb-16 md:pb-0">
-      {/* Header Section - Changed to purple-700 */}
+      {/* Header Section */}
       <header className="bg-purple-500 shadow-sm py-3 px-4 md:px-6 lg:px-12 relative z-20">
         <div className="container mx-auto flex justify-between items-center">
           {/* Logo on left side */}
@@ -111,26 +153,16 @@ const Home = () => {
             <span className="text-2xl md:text-3xl font-extrabold text-orange-400 tracking-tighter">Trip</span>
           </div>
 
-          {/* Login/Logout button on right side */}
+          {/* My Tickets button on right side - Removed Logout button */}
           <nav className="flex items-center space-x-4">
-             <button
+            <button
               onClick={handleMyTickets}
               className="flex items-center text-white hover:text-blue-300 transition duration-200 font-medium text-xs md:text-sm"
             >
               <FaTicketAlt className="mr-1 md:mr-2" />
               <span className="font-semibold hidden md:block">My Tickets</span>
             </button>
-            {user ? (
-              <div className="flex items-center space-x-2">
-                <span className="hidden md:block font-semibold text-sm md:text-base text-white">Hi, {user.firstName || user.email}!</span>
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-1.5 md:px-4 md:py-2 bg-white text-purple-700 rounded-lg hover:bg-blue-100 transition duration-200 font-medium shadow-sm text-xs md:text-sm"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
+            {!user && (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
                 className="flex items-center px-3 py-1.5 md:px-4 md:py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-400 transition duration-200 font-medium shadow-sm text-xs md:text-sm"
@@ -142,6 +174,23 @@ const Home = () => {
           </nav>
         </div>
       </header>
+
+      {/* Welcome Banner */}
+      {showWelcomeBanner && user && (
+        <div className="bg-purple-600 text-white p-3 md:p-4 relative">
+          <div className="container mx-auto flex justify-between items-center">
+            <p className="text-sm md:text-base">
+              Welcome to Travel Trip, {user.name || user.email}!
+            </p>
+            <button
+              onClick={() => setShowWelcomeBanner(false)}
+              className="text-white hover:text-blue-200 transition-colors"
+            >
+              <FaTimes />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Navigation Toggle */}
       <div className="md:hidden bg-white border-t border-b border-gray-200 py-2 px-4">
@@ -155,52 +204,49 @@ const Home = () => {
       </div>
 
       {/* Travel Icons Navigation - Desktop */}
-      <div className="hidden md:block bg-white shadow-md py-3 md:py-4 px-2 md:px-4 relative z-10" style={{
-        background: "linear-gradient(to bottom, white 80%, rgba(255,255,255,0.8))",
-        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-      }}>
+      <div className="hidden md:block bg-white shadow-md py-3 md:py-4 px-2 md:px-4 relative z-10">
         <div className="container mx-auto">
           <div className="flex justify-center">
             <div className="grid grid-cols-7 gap-1 md:gap-2 w-full max-w-5xl">
               <NavTabButton 
                 label="Flights" 
-                icon={<FaPlane className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
+                icon={<FaPlane className="mx-auto text-blue-600 group-hover:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'flights'} 
                 onClick={() => setActiveTab('flights')} 
               />
               <NavTabButton 
                 label="Hotels" 
-                icon={<FaHotel className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
+                icon={<FaHotel className="mx-auto text-blue-600 group-hover:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'hotels'} 
                 onClick={() => setActiveTab('hotels')} 
               />
               <NavTabButton 
                 label="Trains" 
-                icon={<FaTrain className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
+                icon={<FaTrain className="mx-auto text-blue-600 group-hover:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'trains'} 
                 onClick={() => setActiveTab('trains')} 
               />
               <NavTabButton 
                 label="Buses" 
-                icon={<FaBus className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
+                icon={<FaBus className="mx-auto text-blue-600 group-hover:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'buses'} 
                 onClick={() => setActiveTab('buses')} 
               />
               <NavTabButton 
                 label="Cabs" 
-                icon={<FaTaxi className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
+                icon={<FaTaxi className="mx-auto text-blue-600 group-hover:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'cabs'} 
                 onClick={() => setActiveTab('cabs')} 
               />
               <NavTabButton 
                 label="Cinema" 
-                icon={<FaFilm className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
+                icon={<FaFilm className="mx-auto text-blue-600 group-hover:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'cinema'} 
                 onClick={() => setActiveTab('cinema')} 
               />
               <NavTabButton 
                 label="Tours" 
-                icon={<FaGlobeAmericas className="mx-auto text-blue-600 group-hover:text-orange-500 group-focus:text-orange-500 transition-colors duration-300" size={18} />} 
+                icon={<FaGlobeAmericas className="mx-auto text-blue-600 group-hover:text-orange-500 transition-colors duration-300" size={18} />} 
                 isActive={activeTab === 'tour-packages'} 
                 onClick={() => setActiveTab('tour-packages')} 
               />
@@ -259,66 +305,72 @@ const Home = () => {
         </div>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area - Show account section or regular content */}
       <main className="flex-grow container mx-auto px-3 md:px-4 py-6 md:py-8 relative z-0">
-        {/* Booking Tabs and Search Form */}
-        <div className="bg-transparent rounded-xl mb-6 md:mb-8">
-          {renderTabContent()}
-        </div>
+        {mobileBottomNav === 'account' && user ? (
+          renderAccountSection()
+        ) : (
+          <>
+            {/* Booking Tabs and Search Form */}
+            <div className="bg-transparent rounded-xl mb-6 md:mb-8">
+              {renderTabContent()}
+            </div>
 
-        {/* Explore More Section */}
-        <section className="rounded-xl shadow-lg p-4 md:p-6 mb-6 md:mb-8 bg-gradient-to-r from-blue-50 to-purple-50">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 text-center">Explore More</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
-            <ExploreCard 
-              icon={<FaMapMarkerAlt size={20} className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
-              title="Where2Go" 
-              description="Discover new destinations" 
-            />
-            <ExploreCard 
-              icon={<FaShieldAlt size={20} className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
-              title="Insurance" 
-              description="For International Trips" 
-            />
-            <ExploreCard 
-              icon={<FaPlane size={20} className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
-              title="International Flights" 
-              description="Cheapest Flights worldwide" 
-            />
-            <ExploreCard 
-              icon={<HiOutlineOfficeBuilding size={20} className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
-              title="MICE" 
-              description="Offsites & Meetings" 
-            />
-            <ExploreCard 
-              icon={<FaGift size={20} className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
-              title="Gift Cards" 
-              description="Give the gift of travel" 
-            />
-          </div>
-        </section>
+            {/* Explore More Section */}
+            <section className="rounded-xl shadow-lg p-4 md:p-6 mb-6 md:mb-8 bg-gradient-to-r from-blue-50 to-purple-50">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 text-center">Explore More</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+                <ExploreCard 
+                  icon={<FaMapMarkerAlt className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
+                  title="Where2Go" 
+                  description="Discover new destinations" 
+                />
+                <ExploreCard 
+                  icon={<FaShieldAlt className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
+                  title="Insurance" 
+                  description="For International Trips" 
+                />
+                <ExploreCard 
+                  icon={<FaPlane className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
+                  title="International Flights" 
+                  description="Cheapest Flights worldwide" 
+                />
+                <ExploreCard 
+                  icon={<HiOutlineOfficeBuilding className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
+                  title="MICE" 
+                  description="Offsites & Meetings" 
+                />
+                <ExploreCard 
+                  icon={<FaGift className="text-blue-600 group-hover:text-orange-500 transition-colors duration-300" />} 
+                  title="Gift Cards" 
+                  description="Give the gift of travel" 
+                />
+              </div>
+            </section>
 
-        {/* Featured Sections */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <Card 
-            title="Exclusive Flight Deals" 
-            description="Find the best prices for your next adventure." 
-            icon={<FaPlane size={28} className="text-blue-600 mb-3 md:mb-4 group-hover:text-orange-500 transition-colors duration-300" />}
-          />
-          <Card 
-            title="Luxury Hotel Stays" 
-            description="Book your dream vacation with top-rated hotels." 
-            icon={<FaHotel size={28} className="text-blue-600 mb-3 md:mb-4 group-hover:text-orange-500 transition-colors duration-300" />}
-          />
-          <Card 
-            title="Exciting Tour Packages" 
-            description="Explore new destinations with curated packages." 
-            icon={<FaGlobeAmericas size={28} className="text-blue-600 mb-3 md:mb-4 group-hover:text-orange-500 transition-colors duration-300" />}
-          />
-        </section>
+            {/* Featured Sections */}
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <Card 
+                title="Exclusive Flight Deals" 
+                description="Find the best prices for your next adventure." 
+                icon={<FaPlane className="text-blue-600 mb-3 md:mb-4 group-hover:text-orange-500 transition-colors duration-300" />}
+              />
+              <Card 
+                title="Luxury Hotel Stays" 
+                description="Book your dream vacation with top-rated hotels." 
+                icon={<FaHotel className="text-blue-600 mb-3 md:mb-4 group-hover:text-orange-500 transition-colors duration-300" />}
+              />
+              <Card 
+                title="Exciting Tour Packages" 
+                description="Explore new destinations with curated packages." 
+                icon={<FaGlobeAmericas className="text-blue-600 mb-3 md:mb-4 group-hover:text-orange-500 transition-colors duration-300" />}
+              />
+            </section>
+          </>
+        )}
       </main>
 
-      {/* Mobile Bottom Navigation - Changed to purple-700 with white text that changes to blue on hover */}
+      {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-purple-700 z-30 transition-colors duration-300">
         <div className="grid grid-cols-4 gap-1 py-2">
           <MobileBottomNavButton 
@@ -370,7 +422,28 @@ const Home = () => {
   );
 };
 
-// Reusable Components
+// New Account Option Component
+const AccountOption = ({ icon, title, description, onClick, isSignOut = false }) => (
+  <div 
+    className={`flex items-center p-4 bg-white rounded-lg shadow-sm cursor-pointer transition-all duration-300 hover:shadow-md ${
+      isSignOut ? 'hover:bg-red-50' : 'hover:bg-purple-50'
+    }`}
+    onClick={onClick}
+  >
+    <div className="mr-4 text-xl">{icon}</div>
+    <div className="flex-1">
+      <h3 className={`font-semibold ${isSignOut ? 'text-red-700' : 'text-gray-800'}`}>{title}</h3>
+      <p className="text-sm text-gray-600">{description}</p>
+    </div>
+    <div className="text-gray-400">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+      </svg>
+    </div>
+  </div>
+);
+
+// Reusable Components (keep all your existing components here)
 const NavTabButton = ({ label, icon, isActive, onClick }) => (
   <button
     className={`group flex flex-col items-center space-y-1 px-1.5 py-2 md:px-2 md:py-3 rounded-lg transition-all duration-300 ease-in-out text-center

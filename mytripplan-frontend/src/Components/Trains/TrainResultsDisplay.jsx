@@ -1,18 +1,48 @@
-import React from 'react';
+import React from "react";
 
-
-const TrainDisplay = ({ trains }) => {
+const TrainResultsDisplay = ({ trains }) => {
   return (
-    <div className="train-display">
-      <h3>Available Trains</h3>
-      <div className="train-cards">
+    <div className="mt-6">
+      <h3 className="text-xl font-semibold text-gray-700 mb-3">
+        Available Trains
+      </h3>
+      <div className="grid gap-4">
         {trains.map((train, index) => (
-          <div className="train-card" key={index}>
-            <h4>{train.train_name} ({train.train_number})</h4>
-            <p><strong>Departure:</strong> {train.from_std} from {train.from_station_name}</p>
-            <p><strong>Arrival:</strong> {train.to_sta} at {train.to_station_name}</p>
-            <p><strong>Travel Time:</strong> {train.travel_time}</p>
-            <p><strong>Running Days:</strong> {train.run_days.join(', ')}</p>
+          <div
+            key={index}
+            className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition border"
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <h4 className="font-bold text-lg text-blue-700">
+                  {train.trainName} ({train.trainNumber})
+                </h4>
+                <p className="text-gray-600">
+                  {train.fromStation?.name} ({train.fromStation?.code}) →{" "}
+                  {train.toStation?.name} ({train.toStation?.code})
+                </p>
+              </div>
+              <span className="text-sm text-gray-500">
+                {train.duration || "Duration not available"}
+              </span>
+            </div>
+            <div className="mt-2 flex justify-between text-sm text-gray-700">
+              <p>
+                Departure:{" "}
+                <span className="font-semibold">
+                  {train.fromStd || "N/A"}
+                </span>
+              </p>
+              <p>
+                Arrival:{" "}
+                <span className="font-semibold">
+                  {train.toStd || "N/A"}
+                </span>
+              </p>
+            </div>
+            <div className="mt-2 text-sm text-gray-700">
+              <p>Running Days: {train.runDays?.join(", ") || "N/A"}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -20,4 +50,5 @@ const TrainDisplay = ({ trains }) => {
   );
 };
 
-export default TrainDisplay;
+export default TrainResultsDisplay;
+
