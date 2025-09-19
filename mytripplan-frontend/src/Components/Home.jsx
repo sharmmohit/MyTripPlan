@@ -146,7 +146,7 @@ const Home = () => {
 
       {/* Welcome Banner */}
       {showWelcomeBanner && user && (
-        <div className="bg-blue-600 text-white p-3 md:p-4 relative">
+        <div className="bg-purple-600 text-white p-3 md:p-4 relative">
           <div className="container mx-auto flex justify-between items-center">
             <p className="text-sm md:text-base">
               Welcome to Travel Trip, {user.name || user.email}!

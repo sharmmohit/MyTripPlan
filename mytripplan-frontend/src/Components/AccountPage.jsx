@@ -38,7 +38,7 @@ const AccountPage = ({ user, onLogout, onBack }) => {
 
       {/* Welcome Message Box */}
       <div className="container mx-auto p-4">
-        <div className="bg-blue-600 text-white rounded-lg p-6 mb-6 shadow-md">
+        <div className="bg-purple-600 text-white rounded-lg p-6 mb-6 shadow-md">
           <h2 className="text-2xl font-bold mb-2">HELLO Tourist!</h2>
           <p className="text-blue-100">{user?.email}</p>
         </div>
