@@ -12,6 +12,7 @@ import HotelSearch from "./Components/HotelSearch";
 import CinemaResultsPage from "./Components/Cinema/CinemaResultsPage";
 import Login from "./Components/Login";
 import Signup from "./Components/Signup";
+import TrainBooking from "./Components/Trains/TrainBooking";
 
 function App() {
   // Function to handle login success
@@ -38,6 +39,8 @@ function App() {
         <Route path="/cab-results" element={<CabResults />} />
         <Route path="/hotel-search" element={<HotelSearch />} />
         <Route path="/cinema-results" element={<CinemaResultsPage />} />
+        <Route path="/train-results" element={<TrainResults />} />
+<Route path="/train-booking" element={<TrainBooking />} />
       </Routes>
 
       {/* Toast container for notifications */}
