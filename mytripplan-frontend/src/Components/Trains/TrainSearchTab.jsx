@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FaTrain, FaCalendarAlt, FaUser, FaChevronDown, FaExchangeAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE } from '../../config';
 
 const TrainSearchTab = () => {
     const navigate = useNavigate();
@@ -18,6 +17,7 @@ const TrainSearchTab = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // More comprehensive station list
     const stations = [
         { name: 'New Delhi', code: 'NDLS', city: 'Delhi' },
         { name: 'Mumbai Central', code: 'BCT', city: 'Mumbai' },
@@ -29,6 +29,26 @@ const TrainSearchTab = () => {
         { name: 'Pune Junction', code: 'PUNE', city: 'Pune' },
         { name: 'Jaipur Junction', code: 'JP', city: 'Jaipur' },
         { name: 'Lucknow Charbagh', code: 'LKO', city: 'Lucknow' },
+        { name: 'Patna Junction', code: 'PNBE', city: 'Patna' },
+        { name: 'Bhopal Junction', code: 'BPL', city: 'Bhopal' },
+        { name: 'Chhatrapati Shivaji Terminus', code: 'CSTM', city: 'Mumbai' },
+        { name: 'Kanpur Central', code: 'CNB', city: 'Kanpur' },
+        { name: 'Varanasi Junction', code: 'BSB', city: 'Varanasi' },
+        { name: 'Coimbatore Junction', code: 'CBE', city: 'Coimbatore' },
+        { name: 'Nagpur Junction', code: 'NGP', city: 'Nagpur' },
+        { name: 'Visakhapatnam Junction', code: 'VSKP', city: 'Visakhapatnam' },
+        { name: 'Thiruvananthapuram Central', code: 'TVC', city: 'Thiruvananthapuram' },
+        { name: 'Madurai Junction', code: 'MDU', city: 'Madurai' },
+        { name: 'Guwahati', code: 'GHY', city: 'Guwahati' },
+        { name: 'Chandigarh Junction', code: 'CDG', city: 'Chandigarh' },
+        { name: 'Jammu Tawi', code: 'JAT', city: 'Jammu' },
+        { name: 'Dehradun', code: 'DDN', city: 'Dehradun' },
+        { name: 'Bhubaneswar', code: 'BBS', city: 'Bhubaneswar' },
+        { name: 'Ranchi Junction', code: 'RNC', city: 'Ranchi' },
+        { name: 'Raipur Junction', code: 'R', city: 'Raipur' },
+        { name: 'Jabalpur Junction', code: 'JBP', city: 'Jabalpur' },
+        { name: 'Gwalior Junction', code: 'GWL', city: 'Gwalior' },
+        { name: 'Kochi', code: 'ERS', city: 'Kochi' },
     ];
 
     const classOptions = [
@@ -60,6 +80,14 @@ const TrainSearchTab = () => {
         setToCode(tempCode);
     };
 
+    const formatDateForAPI = (dateString) => {
+        const date = new Date(dateString);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}${month}${year}`;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -75,84 +103,52 @@ const TrainSearchTab = () => {
 
         setLoading(true);
         try {
-            // Using RailYatri API for real-time data (free tier)
-            const response = await fetch(`https://railapi.rail.co.in/api/v2/route/train/${fromCode}/to/${toCode}/date/${departureDate}/`);
+            // Using IRCTC API from RapidAPI
+            const formattedDate = formatDateForAPI(departureDate);
+            
+            const url = `https://irctc1.p.rapidapi.com/api/v2/trainBetweenStations?fromStationCode=${fromCode}&toStationCode=${toCode}&dateOfJourney=${formattedDate}`;
+            
+            const options = {
+                method: 'GET',
+                headers: {
+                    'X-RapidAPI-Key': 'bc4914961fmsh2906570d84a8ee3p1b1782jsn42832c37a4ba',
+                    'X-RapidAPI-Host': 'irctc1.p.rapidapi.com'
+                }
+            };
+
+            const response = await fetch(url, options);
             
             if (!response.ok) {
-                throw new Error('Failed to fetch train data');
+                throw new Error(`API error: ${response.status}`);
             }
 
             const data = await response.json();
             
-            navigate('/train-results', {
-                state: {
-                    trains: data.trains || [],
-                    searchParams: {
-                        fromStation,
-                        toStation,
-                        fromCode,
-                        toCode,
-                        departureDate,
-                        passengers,
-                        classType
+            if (data.status && data.data && data.data.length > 0) {
+                navigate('/train-results', {
+                    state: {
+                        trains: data.data,
+                        searchParams: {
+                            fromStation,
+                            toStation,
+                            fromCode,
+                            toCode,
+                            departureDate,
+                            passengers,
+                            classType
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                throw new Error('No trains found for this route');
+            }
         } catch (err) {
             console.error('Train search error:', err);
-            // Fallback to mock data if API fails
-            navigate('/train-results', {
-                state: {
-                    trains: getMockTrainData(),
-                    searchParams: {
-                        fromStation,
-                        toStation,
-                        fromCode,
-                        toCode,
-                        departureDate,
-                        passengers,
-                        classType
-                    }
-                }
-            });
+            setError(err.message || 'Failed to fetch train data. Please try again.');
         } finally {
             setLoading(false);
         }
     };
-
-    // Mock data fallback
-    const getMockTrainData = () => [
-        {
-            train_number: "12301",
-            train_name: "Rajdhani Express",
-            from_station: fromCode,
-            to_station: toCode,
-            departure_time: "17:00",
-            arrival_time: "08:00",
-            duration: "15h 00m",
-            classes: ["1A", "2A", "3A"],
-            fare: {
-                "1A": 4500,
-                "2A": 2500,
-                "3A": 1500
-            }
-        },
-        {
-            train_number: "12259",
-            train_name: "Sealdah Duronto",
-            from_station: fromCode,
-            to_station: toCode,
-            departure_time: "20:30",
-            arrival_time: "10:15",
-            duration: "13h 45m",
-            classes: ["2A", "3A", "SL"],
-            fare: {
-                "2A": 2200,
-                "3A": 1300,
-                "SL": 800
-            }
-        }
-    ];
 
     return (
         <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
@@ -327,8 +323,7 @@ const TrainSearchTab = () => {
             {/* API Note */}
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                 <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> Using mock train data for demonstration. 
-                    In production, integrate with Indian Railways API or RailYatri API for real-time data.
+                    <strong>Note:</strong> Using real-time IRCTC API to fetch train data.
                 </p>
             </div>
         </div>

@@ -13,7 +13,8 @@ import CinemaResultsPage from "./Components/Cinema/CinemaResultsPage";
 import Login from "./Components/Login";
 import Signup from "./Components/Signup";
 import TrainBooking from "./Components/Trains/TrainBooking";
-
+import FlightResults from "./Components/Flights/FlightResultsDisplay";
+import FlightBooking from "./Components/Flights/FlightBooking";
 function App() {
   // Function to handle login success
   const handleLoginSuccess = (userData, token) => {
@@ -41,6 +42,8 @@ function App() {
         <Route path="/cinema-results" element={<CinemaResultsPage />} />
         <Route path="/train-results" element={<TrainResults />} />
 <Route path="/train-booking" element={<TrainBooking />} />
+<Route path="/flight-results" element={<FlightResults />} />
+<Route path="/flight-booking" element={<FlightBooking />} />
       </Routes>
 
       {/* Toast container for notifications */}

@@ -1,143 +1,173 @@
-// FILE: src/Components/FlightResultsDisplay.jsx
-
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FaPlane, FaClock, FaRupeeSign, FaArrowLeft } from 'react-icons/fa';
 
-const FlightResultsDisplay = () => {
-    const navigate = useNavigate();
+const FlightResults = () => {
     const location = useLocation();
-    const { searchResults, searchParams } = location.state || {};
+    const navigate = useNavigate();
+    const { flights, searchParams } = location.state || { flights: [], searchParams: {} };
 
-    const handleBackToSearch = () => {
-        navigate('/');
+    const formatTime = (timeString) => {
+        if (!timeString) return 'N/A';
+        const time = new Date(timeString);
+        return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    // This block handles cases where the page is accessed directly or state is missing
-    if (!searchResults || !searchParams) {
+    const formatDuration = (departure, arrival) => {
+        if (!departure || !arrival) return 'N/A';
+        
+        const dep = new Date(departure);
+        const arr = new Date(arrival);
+        const diff = Math.abs(arr - dep);
+        
+        const hours = Math.floor(diff / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        
+        return `${hours}h ${minutes}m`;
+    };
+
+    const calculatePrice = (basePrice, cabinClass, passengers) => {
+        const classMultipliers = {
+            economy: 1,
+            premium_economy: 1.5,
+            business: 2.5,
+            first: 4
+        };
+        
+        const totalPassengers = passengers.adults + passengers.children + (passengers.infants * 0.1);
+        const price = basePrice * classMultipliers[cabinClass] * totalPassengers;
+        
+        return Math.round(price);
+    };
+
+    const handleBookNow = (flight) => {
+        navigate('/flight-booking', {
+            state: {
+                flight,
+                searchParams
+            }
+        });
+    };
+
+    if (!flights || flights.length === 0) {
         return (
-            <div className="p-4 bg-white rounded-lg shadow-md text-center">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">No Search Results Found</h2>
-                <p className="text-gray-600 mb-6">Please perform a flight search first.</p>
-                <button
-                    onClick={handleBackToSearch}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg"
-                >
-                    Back to Search
-                </button>
+            <div className="min-h-screen bg-gray-50 py-8">
+                <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+                    <button 
+                        onClick={() => navigate('/')}
+                        className="flex items-center text-blue-600 hover:text-blue-800 mb-6"
+                    >
+                        <FaArrowLeft className="mr-2" />
+                        Back to Search
+                    </button>
+                    
+                    <div className="text-center py-12">
+                        <FaPlane className="text-gray-400 text-6xl mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">No Flights Found</h2>
+                        <p className="text-gray-600">No flights available for the selected route and date.</p>
+                    </div>
+                </div>
             </div>
         );
     }
 
-    const { fromLocation, toLocation, departureDate, returnDate, passengers, cabinClass, tripType } = searchParams;
-
-    const formatDate = (dateString) => {
-        // Ensure dateString is valid before creating Date object
-        if (!dateString) return '';
-        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-        try {
-            return new Date(dateString).toLocaleDateString(undefined, options);
-        } catch (e) {
-            console.error("Error formatting date:", e, dateString);
-            return dateString; // Fallback to raw string if parsing fails
-        }
-    };
-
-    const formatTime = (dateTimeString) => {
-        // Ensure dateTimeString is valid before creating Date object
-        if (!dateTimeString) return '';
-        try {
-            return new Date(dateTimeString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } catch (e) {
-            console.error("Error formatting time:", e, dateTimeString);
-            return dateTimeString; // Fallback to raw string if parsing fails
-        }
-    };
-
     return (
-        <div className="p-4 bg-white rounded-lg shadow-md max-w-6xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Flight Search Results</h2>
+        <div className="min-h-screen bg-gray-50 py-8">
+            <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-6">
+                {/* Header */}
+                <button 
+                    onClick={() => navigate('/')}
+                    className="flex items-center text-blue-600 hover:text-blue-800 mb-6"
+                >
+                    <FaArrowLeft className="mr-2" />
+                    Back to Search
+                </button>
 
-            {/* Search Summary */}
-            <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200">
-                <h3 className="text-lg font-semibold text-blue-800 mb-2">Your Search:</h3>
-                <p className="text-gray-700">
-                    <span className="font-medium">{fromLocation.toUpperCase()}</span> to <span className="font-medium">{toLocation.toUpperCase()}</span>
-                </p>
-                <p className="text-gray-700">
-                    Departure: <span className="font-medium">{formatDate(departureDate)}</span>
-                    {tripType === 'round-trip' && returnDate && ( // Added check for returnDate to prevent error if undefined
-                        <span> | Return: <span className="font-medium">{formatDate(returnDate)}</span></span>
-                    )}
-                </p>
-                <p className="text-gray-700">
-                    Passengers: <span className="font-medium">{passengers}</span> | Cabin Class: <span className="font-medium">
-                        {cabinClass.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                    </span>
-                </p>
-            </div>
+                <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                    <h1 className="text-2xl font-bold text-gray-800 mb-2">Flight Search Results</h1>
+                    <p className="text-gray-600">
+                        {searchParams.fromCity} → {searchParams.toCity} • 
+                        {new Date(searchParams.departureDate).toLocaleDateString()} • 
+                        {searchParams.passengers.adults + searchParams.passengers.children} Passenger{(searchParams.passengers.adults + searchParams.passengers.children) > 1 ? 's' : ''}
+                    </p>
+                </div>
 
-            {searchResults.length > 0 ? (
+                {/* Results */}
                 <div className="space-y-4">
-                    {searchResults.map((flight) => (
-                        <div key={flight.flight_id} className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-                                <div className="mb-2 md:mb-0">
-                                    <p className="text-lg font-semibold text-gray-900">{flight.airline_name}</p>
-                                    <p className="text-sm text-gray-600">Flight #{flight.flight_number}</p>
-                                </div>
-
-                                <div className="flex-1 md:px-4">
-                                    <div className="flex justify-between items-center">
-                                        <div className="text-center">
-                                            <p className="text-xl font-bold">{formatTime(flight.departure_time)}</p>
-                                            {/* CHANGED: Use flight.departure_airport_id */}
-                                            <p className="text-sm text-gray-600">{flight.departure_airport_id}</p>
-                                        </div>
-
-                                        <div className="mx-2 text-center">
-                                            <p className="text-sm text-gray-500">{flight.duration_minutes} min</p>
-                                            <div className="w-16 h-px bg-gray-300 my-1"></div>
-                                            <p className="text-sm text-gray-500">Non-stop</p>
-                                        </div>
-
-                                        <div className="text-center">
-                                            <p className="text-xl font-bold">{formatTime(flight.arrival_time)}</p>
-                                            {/* CHANGED: Use flight.arrival_airport_id */}
-                                            <p className="text-sm text-gray-600">{flight.arrival_airport_id}</p>
-                                        </div>
+                    {flights.map((flight, index) => (
+                        <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                {/* Airline Info */}
+                                <div>
+                                    <h3 className="font-bold text-lg text-blue-800">
+                                        {flight.airline?.name || 'Unknown Airline'}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        {flight.flight?.iata || flight.flight?.number || 'N/A'}
+                                    </p>
+                                    <div className="flex items-center mt-2 text-sm text-gray-600">
+                                        <FaClock className="mr-1" />
+                                        {formatDuration(flight.departure?.scheduled, flight.arrival?.scheduled)}
                                     </div>
                                 </div>
 
-                                <div className="mt-2 md:mt-0 text-right">
-                                    <p className="text-2xl font-extrabold text-green-600">₹{flight.price}</p>
+                                {/* Schedule */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="font-semibold text-lg">
+                                            {formatTime(flight.departure?.scheduled)}
+                                        </p>
+                                        <p className="text-sm text-gray-600">{searchParams.fromCode}</p>
+                                        <p className="text-xs text-gray-500">{searchParams.fromCity}</p>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-lg">
+                                            {formatTime(flight.arrival?.scheduled)}
+                                        </p>
+                                        <p className="text-sm text-gray-600">{searchParams.toCode}</p>
+                                        <p className="text-xs text-gray-500">{searchParams.toCity}</p>
+                                    </div>
+                                </div>
+
+                                {/* Flight Details */}
+                                <div>
+                                    <p className="text-sm text-gray-600">
+                                        Status: <span className={`font-medium ${
+                                            flight.flight_status === 'scheduled' ? 'text-green-600' :
+                                            flight.flight_status === 'active' ? 'text-blue-600' :
+                                            flight.flight_status === 'landed' ? 'text-gray-600' :
+                                            'text-red-600'
+                                        }`}>
+                                            {flight.flight_status?.charAt(0).toUpperCase() + flight.flight_status?.slice(1)}
+                                        </span>
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                        Aircraft: {flight.aircraft?.iata || 'N/A'}
+                                    </p>
+                                </div>
+
+                                {/* Price & Booking */}
+                                <div className="text-right">
+                                    <div className="flex items-center justify-end mb-2">
+                                        <FaRupeeSign className="text-green-600 text-sm" />
+                                        <span className="font-bold text-green-700 text-xl">
+                                            {calculatePrice(2500, searchParams.cabinClass, searchParams.passengers)}
+                                        </span>
+                                    </div>
                                     <button
-                                        className="mt-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg"
-                                        onClick={() => alert(`Booking flight ${flight.flight_number}`)}
+                                        onClick={() => handleBookNow(flight)}
+                                        className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded font-medium transition-colors"
                                     >
-                                        BOOK NOW
+                                        Book Now
                                     </button>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
-            ) : (
-                <div className="text-center text-gray-600 text-lg py-10">
-                    <p>No flights found for your search criteria.</p>
-                    <p className="text-sm mt-2">Try adjusting your search parameters.</p>
-                </div>
-            )}
-
-            <div className="text-center mt-6">
-                <button
-                    onClick={handleBackToSearch}
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg"
-                >
-                    Back to Search
-                </button>
             </div>
         </div>
     );
 };
 
-export default FlightResultsDisplay;
+export default FlightResults;
