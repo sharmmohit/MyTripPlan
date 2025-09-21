@@ -7,7 +7,7 @@ import BusSearchTab from './Buses/BusSearchTab';
 import CabSearchTab from './Cabs/CabSearchTab';
 import CinemaSearchTab from './Cinema/CinemaSearchTab';
 import HotelSearchTab from './HotelSearchTab';
-import HotelSearch from './HotelSearch';
+import HotelSearch from './Hotels/HotelSearch';
 import Login from './Login';
 import AccountPage from './AccountPage'; // New component for account page
 
